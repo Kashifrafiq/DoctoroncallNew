@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "859404488134",
+    "project_id": "doctoroncall-a158a",
+    "storage_bucket": "doctoroncall-a158a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:859404488134:android:d75541e8ecf9e1448236c7",
+        "android_client_info": {
+          "package_name": "com.doctorOnCall"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCeCjI56kgC28ctdFv7c4Ufl3yu3ymwGvs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:859404488134:android:3f31e27a637d70c88236c7",
+        "android_client_info": {
+          "package_name": "com.stp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCeCjI56kgC28ctdFv7c4Ufl3yu3ymwGvs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

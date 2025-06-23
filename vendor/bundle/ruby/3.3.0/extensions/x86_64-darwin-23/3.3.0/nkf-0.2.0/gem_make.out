@@ -1,0 +1,18 @@
+current directory: /Users/kashif/Desktop/doctoroncall/vendor/bundle/ruby/3.3.0/gems/nkf-0.2.0/ext/nkf
+/usr/local/opt/ruby/bin/ruby extconf.rb
+creating Makefile
+
+current directory: /Users/kashif/Desktop/doctoroncall/vendor/bundle/ruby/3.3.0/gems/nkf-0.2.0/ext/nkf
+make DESTDIR\= sitearchdir\=./.gem.20250430-12542-bxjsj sitelibdir\=./.gem.20250430-12542-bxjsj clean
+
+current directory: /Users/kashif/Desktop/doctoroncall/vendor/bundle/ruby/3.3.0/gems/nkf-0.2.0/ext/nkf
+make DESTDIR\= sitearchdir\=./.gem.20250430-12542-bxjsj sitelibdir\=./.gem.20250430-12542-bxjsj
+compiling nkf.c
+linking shared-object nkf.bundle
+
+current directory: /Users/kashif/Desktop/doctoroncall/vendor/bundle/ruby/3.3.0/gems/nkf-0.2.0/ext/nkf
+make DESTDIR\= sitearchdir\=./.gem.20250430-12542-bxjsj sitelibdir\=./.gem.20250430-12542-bxjsj install
+/usr/bin/install -c -m 0755 nkf.bundle ./.gem.20250430-12542-bxjsj
+
+current directory: /Users/kashif/Desktop/doctoroncall/vendor/bundle/ruby/3.3.0/gems/nkf-0.2.0/ext/nkf
+make DESTDIR\= sitearchdir\=./.gem.20250430-12542-bxjsj sitelibdir\=./.gem.20250430-12542-bxjsj clean
