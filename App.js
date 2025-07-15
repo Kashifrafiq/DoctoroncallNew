@@ -7,7 +7,8 @@ import {
   SafeAreaView,
   StyleSheet,
   Text,
-  View
+  View,
+  StatusBar
 } from 'react-native';
 import IntroScreen from './src/screens/intro/IntroScreen';
 import LoginScreen from './src/screens/auth/login/LoginScreen';
@@ -33,6 +34,7 @@ function App(){
 
   return (
     <SafeAreaView style={styles.mainContainer} >
+      <StatusBar backgroundColor={'black'} barStyle='dark-content' />
       <MainNavigation />
       {/* <Test /> */}
     </SafeAreaView> 
@@ -41,6 +43,7 @@ function App(){
 
 const styles = StyleSheet.create({
   mainContainer: {
+    paddingTop: StatusBar.currentHeight,
     flex: 1,
     width: '100%'
   }

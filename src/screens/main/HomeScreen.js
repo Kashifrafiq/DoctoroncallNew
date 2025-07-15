@@ -7,7 +7,8 @@ import {
   TouchableOpacity,
   View,
   ActivityIndicator,
-  Alert
+  Alert,
+  SafeAreaView
 } from 'react-native';
 import React, {useEffect, useState, useRef, useMemo} from 'react';
 import {COLORS} from '../../assets/color/COLOR';
@@ -223,9 +224,8 @@ const HomeScreen = () => {
   }
 
   return (
-   
     <View style={styles.container}>
-      {/* Heading Text */}
+      {/* Heading Text */}  
       <View style={styles.header}>
         <Text style={styles.text1}>Welcome, </Text>
         <Text style={styles.text2}> {user?.name}</Text>
@@ -378,6 +378,7 @@ const HomeScreen = () => {
             type={activeTab}
             rbSheetRef={refRBSheet}
             verified={user?.virified}
+
           />
         )}
       />
@@ -435,13 +436,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.white,
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
+    
+
     // padding: '7%',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
+    
   },
   text1: {
     color: COLORS.textgrey,

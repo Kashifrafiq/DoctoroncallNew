@@ -4,10 +4,10 @@ import {COLORS} from '../../assets/color/COLOR';
 import Icon from 'react-native-vector-icons/Entypo';
 import {storeData, getData} from '../../services/localStorage';
 
-const DiseaseHeader = ({img, mainText, secText, id, disable, diseaseID}) => {
+const DiseaseHeader = ({img, mainText, secText, id, disable, diseaseID, type}) => {
   const [isliked, setisLiked] = useState(false);
 
-  console.log('Disease ID', diseaseID);
+
 
   const checkData = async () => {
     try {
@@ -80,7 +80,7 @@ const DiseaseHeader = ({img, mainText, secText, id, disable, diseaseID}) => {
       </View>
       <View style={styles.middleContainer}>
         <Text style={styles.mainText}>{mainText}</Text>
-        <Text style={styles.secText}>{secText} diseases discussed</Text>
+        <Text style={styles.secText}>{secText} {type} discussed</Text>
       </View>
 
       <TouchableOpacity

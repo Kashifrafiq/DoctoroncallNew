@@ -17,20 +17,22 @@ const ListOfDiseases = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const filterData = useCallback(async (allData) => {
+  const filterData = useCallback(async (allData, type) => {
     try {
       if (catData.fvrtScreen) {
         const favoriteData = await getData('fvrt');
         const catIdSet = new Set(favoriteData.map(item => item.diseaseID));
-        return allData.filter(disease => catIdSet.has(disease.id));
+        return allData?.filter(disease => catIdSet.has(disease?.id));
       } else if (catData.rcntScreen) {
         const recentData = await getData('recent');
         const catIdSet = new Set(recentData.map(item => item.diseaseID));
         return allData.filter(disease => catIdSet.has(disease.id));
       } else {
-        return allData.filter(disease =>
-          disease['disease-category'].includes(catData.diseaseId),
-        );
+        if(type === 'disease') {
+          return allData.filter(disease => disease[`disease-category`].includes(catData.diseaseId));
+        } else {
+          return allData.filter(disease => disease.drug_category.includes(catData.diseaseId));
+        }
       }
     } catch (error) {
       console.error('Error filtering data:', error);
@@ -45,12 +47,13 @@ const ListOfDiseases = () => {
       
       if (catData.type === 'drugs' || catData.type === 'drug') {
         allData = await getDrugs();
+        const filteredData = await filterData(allData, 'drug' );
+        setData(filteredData);
       } else {
         allData = await getdiseases();
+        const filteredData = await filterData(allData, 'disease');
+        setData(filteredData);
       }
-
-      const filteredData = await filterData(allData);
-      setData(filteredData);
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -59,6 +62,7 @@ const ListOfDiseases = () => {
   }, [catData, filterData]);
 
   useEffect(() => {
+    console.log('catData', catData);
     loadData();
   }, [loadData]);
 
@@ -82,6 +86,7 @@ const ListOfDiseases = () => {
         secText={catData.count}
         id={catData.diseaseId}
         disable={true}
+        type={catData.type}
       />
       {loading ? (
         <ActivityIndicator size="large" color={COLORS.primary} />

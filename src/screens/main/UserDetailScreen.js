@@ -174,9 +174,9 @@ const UserDetailScreen = () => {
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>PMDC/CNIC</Text>
+              <Text style={styles.label}>PMDC/Medical Licensing Number</Text>
               <CustomInput
-                placeholder={'PMDC/CNIC number'}
+                placeholder={'PMDC/Medical Licensing Number'}
                 icon={'v-card'}
                 value={cnic}
                 textchangeFunction={setcnic}

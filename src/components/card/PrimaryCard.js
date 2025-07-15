@@ -17,7 +17,8 @@ const PrimaryCard = ({
   type,
   rbSheetRef,
   fvrtScreen,
-  rcntScreen
+  rcntScreen,
+  
 }) => {
   const navigation = useNavigation();
 
@@ -83,7 +84,7 @@ const PrimaryCard = ({
       />
       <Text style={styles.mainText}>{mainText}</Text>
       <Text style={styles.secondaryText}>
-        {secondaryText} diseases discussed
+        {secondaryText} {type} discussed
       </Text>
     </TouchableOpacity>
   );

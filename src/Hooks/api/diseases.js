@@ -4,6 +4,8 @@ const CACHE_KEY = 'diseases_cache';
 const CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 const PAGE_SIZE = 50; // Reduced page size for faster initial load
 const MAX_RETRIES = 3;
+const CHUNK_SIZE = 100; // Number of items per chunk
+const CACHE_PREFIX = 'diseases_chunk_';
 
 const fetchWithRetry = async (url, retries = MAX_RETRIES) => {
   try {
@@ -24,14 +26,23 @@ const fetchWithRetry = async (url, retries = MAX_RETRIES) => {
 
 const getCachedData = async () => {
   try {
-    const cachedData = await AsyncStorage.getItem(CACHE_KEY);
-    if (cachedData) {
-      const { data, timestamp } = JSON.parse(cachedData);
-      if (Date.now() - timestamp < CACHE_EXPIRY) {
-        return data;
-      }
-    }
-    return null;
+    // Get metadata first
+    const metadata = await AsyncStorage.getItem(`${CACHE_PREFIX}metadata`);
+    if (!metadata) return null;
+
+    const { totalChunks } = JSON.parse(metadata);
+    const chunkKeys = Array.from(
+      { length: totalChunks },
+      (_, i) => `${CACHE_PREFIX}${i}`
+    );
+
+    // Fetch all chunks in parallel
+    const chunks = await AsyncStorage.multiGet(chunkKeys);
+    const allData = chunks.flatMap(([_, value]) => 
+      value ? JSON.parse(value).data : []
+    );
+
+    return allData;
   } catch (error) {
     console.error('Error reading cache:', error);
     return null;
@@ -40,15 +51,35 @@ const getCachedData = async () => {
 
 const saveToCache = async (data) => {
   try {
-    const cacheData = {
-      data,
-      timestamp: Date.now(),
-    };
-    await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+    // Split data into chunks
+    const chunks = [];
+    for (let i = 0; i < data.length; i += CHUNK_SIZE) {
+      chunks.push(data.slice(i, i + CHUNK_SIZE));
+    }
+
+    // Store each chunk separately
+    await Promise.all(
+      chunks.map((chunk, index) => 
+        AsyncStorage.setItem(
+          `${CACHE_PREFIX}${index}`,
+          JSON.stringify({
+            data: chunk,
+            timestamp: Date.now(),
+          })
+        )
+      )
+    );
+
+    // Store metadata (number of chunks)
+    await AsyncStorage.setItem(
+      `${CACHE_PREFIX}metadata`,
+      JSON.stringify({ totalChunks: chunks.length })
+    );
   } catch (error) {
     console.error('Error saving to cache:', error);
   }
 };
+
 
 export const getDiseasesCatogery = async (page = 1, allData = []) => {
     try {
