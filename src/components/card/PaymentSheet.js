@@ -8,19 +8,23 @@ import {
   Alert,
   Platform,
   ActivityIndicator,
-} from 'react-native';
-import React, {useState} from 'react';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {COLORS} from '../../assets/color/COLOR';
-import {checkCode} from '../../Hooks/api/code';
-import {updateUserData, isProfileComplete} from '../../services/FirebaaseFunctions';
-import auth from '@react-native-firebase/auth';
-import {useNavigation} from '@react-navigation/native';
-import {BottomSheetTextInput, BottomSheetView} from '@gorhom/bottom-sheet';
+} from "react-native";
+import React, { useState } from "react";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { COLORS } from "../../assets/color/COLOR";
+import { checkCode } from "../../Hooks/api/code";
+import {
+  updateUserData,
+  isProfileComplete,
+  updateUserVerification,
+} from "../../services/FirebaaseFunctions";
+import auth from "@react-native-firebase/auth";
+import { useNavigation } from "@react-navigation/native";
+import { BottomSheetTextInput, BottomSheetView } from "@gorhom/bottom-sheet";
 
-const PaymentSheet = ({rbSheetRef, setrefresh}) => {
+const PaymentSheet = ({ rbSheetRef, setrefresh }) => {
   const [isCodeCorrect, setIsCodeCorrect] = useState(false);
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation();
 
@@ -29,28 +33,28 @@ const PaymentSheet = ({rbSheetRef, setrefresh}) => {
       const isComplete = await isProfileComplete(auth().currentUser.uid);
       if (!isComplete) {
         Alert.alert(
-          'Complete Profile Required',
-          'Please complete your profile details before making a payment.',
+          "Complete Profile Required",
+          "Please complete your profile details before making a payment.",
           [
             {
-              text: 'Cancel',
-              style: 'cancel',
+              text: "Cancel",
+              style: "cancel",
               onPress: () => rbSheetRef.current.close(),
             },
             {
-              text: 'Complete Profile',
+              text: "Complete Profile",
               onPress: () => {
                 rbSheetRef.current.close();
-                navigation.navigate('ProfileScreen');
+                navigation.navigate("ProfileScreen");
               },
             },
-          ],
+          ]
         );
         return false;
       }
       return true;
     } catch (error) {
-      console.error('Error checking user profile:', error);
+      console.error("Error checking user profile:", error);
       return false;
     }
   };
@@ -60,9 +64,9 @@ const PaymentSheet = ({rbSheetRef, setrefresh}) => {
     if (!isProfileComplete) return;
 
     const url =
-      'https://api.whatsapp.com/send?phone=+9203175193394&text=Hello.%20I%20have%20installed%20Doctor%20Oncall%20App.%20How%20I%20can%20get%20premium%20access%20to%20all%20drugs%20and%20diseases%20?%20';
+      "https://api.whatsapp.com/send?phone=+9203175193394&text=Hello.%20I%20have%20installed%20Doctor%20Oncall%20App.%20How%20I%20can%20get%20premium%20access%20to%20all%20drugs%20and%20diseases%20?%20";
     Linking.openURL(url).catch(() => {
-      Alert.alert('Error', 'Make sure WhatsApp is installed on your device');
+      Alert.alert("Error", "Make sure WhatsApp is installed on your device");
     });
   };
 
@@ -71,7 +75,7 @@ const PaymentSheet = ({rbSheetRef, setrefresh}) => {
     if (!isProfileComplete) return;
 
     if (!code.trim()) {
-      Alert.alert('Error', 'Please enter a verification code');
+      Alert.alert("Error", "Please enter a verification code");
       return;
     }
 
@@ -81,14 +85,27 @@ const PaymentSheet = ({rbSheetRef, setrefresh}) => {
       if (response === 400) {
         setIsCodeCorrect(true);
       } else if (response === 200) {
-        await updateUserData(auth().currentUser.uid, 'virified', true);
-        setrefresh(prev => !prev);
+        // Calculate dates
+        const today = new Date();
+        const expiryDate = new Date();
+        expiryDate.setMonth(expiryDate.getMonth() + 4); // 4 months from now
+
+        await updateUserVerification(
+          auth().currentUser.uid,
+          true, // verified
+          today, // verifiedAt
+          expiryDate // expiryDate
+        );
+        setrefresh((prev) => !prev);
         rbSheetRef.current.close();
-        Alert.alert('Success', 'Your account has been verified successfully for 4 months!');
+        Alert.alert(
+          "Success",
+          "Your account has been verified successfully for 4 months!"
+        );
       }
     } catch (error) {
-      console.error('Error verifying code:', error);
-      Alert.alert('Error', 'Failed to verify your account. Please try again.');
+      console.error("Error verifying code:", error);
+      Alert.alert("Error", "Failed to verify your account. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -110,11 +127,15 @@ const PaymentSheet = ({rbSheetRef, setrefresh}) => {
       <View style={isLoading && styles.contentBlurred}>
         <View style={styles.header}>
           <Text style={styles.headerText}>Unlock Full Access!</Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => rbSheetRef.current.close()}
             disabled={isLoading}
           >
-            <Icon name="close" color={isLoading ? COLORS.textgrey : COLORS.black} size={24} />
+            <Icon
+              name="close"
+              color={isLoading ? COLORS.textgrey : COLORS.black}
+              size={24}
+            />
           </TouchableOpacity>
         </View>
 
@@ -132,8 +153,8 @@ const PaymentSheet = ({rbSheetRef, setrefresh}) => {
             </Text>
           </View>
           <View style={styles.contactLeft}>
-            <TouchableOpacity 
-              style={[styles.contactButton, isLoading && styles.buttonDisabled]} 
+            <TouchableOpacity
+              style={[styles.contactButton, isLoading && styles.buttonDisabled]}
               onPress={onPressContactUs}
               disabled={isLoading}
             >
@@ -145,7 +166,11 @@ const PaymentSheet = ({rbSheetRef, setrefresh}) => {
         <View style={styles.codeSection}>
           <Text style={styles.haveCodeText}>Have a code?</Text>
           <View style={styles.textinputContainer}>
-            <Icon name="form-textbox-password" color={COLORS.primary} size={20} />
+            <Icon
+              name="form-textbox-password"
+              color={COLORS.primary}
+              size={20}
+            />
             <BottomSheetTextInput
               placeholder="Enter code here"
               style={styles.textinput}
@@ -158,8 +183,8 @@ const PaymentSheet = ({rbSheetRef, setrefresh}) => {
             />
             <TouchableOpacity
               style={[
-                styles.verifyButton, 
-                isLoading && styles.verifyButtonDisabled
+                styles.verifyButton,
+                isLoading && styles.verifyButtonDisabled,
               ]}
               onPress={onPressVerify}
               disabled={isLoading}
@@ -172,7 +197,9 @@ const PaymentSheet = ({rbSheetRef, setrefresh}) => {
             </TouchableOpacity>
           </View>
           {isCodeCorrect && (
-            <Text style={styles.wrongCodeText}>Invalid code. Please try again.</Text>
+            <Text style={styles.wrongCodeText}>
+              Invalid code. Please try again.
+            </Text>
           )}
         </View>
       </View>
@@ -184,19 +211,19 @@ export default PaymentSheet;
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
+    width: "100%",
     padding: 20,
   },
   header: {
-    flexDirection: 'row',
-    width: '100%',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    width: "100%",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 16,
   },
   headerText: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: "700",
     color: COLORS.black,
   },
   paraText: {
@@ -206,12 +233,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   contactContainer: {
-    width: '100%',
-    backgroundColor: '#EBFFE8',
+    width: "100%",
+    backgroundColor: "#EBFFE8",
     borderWidth: 1,
-    borderColor: '#A7D3FE',
+    borderColor: "#A7D3FE",
     padding: 16,
-    flexDirection: 'row',
+    flexDirection: "row",
     borderRadius: 12,
     marginBottom: 24,
   },
@@ -220,12 +247,12 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   contactLeft: {
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   contactMainText: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#EF9327',
+    fontWeight: "700",
+    color: "#EF9327",
     marginBottom: 4,
   },
   contactNormText: {
@@ -234,7 +261,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   contactButton: {
-    backgroundColor: '#27EF9B',
+    backgroundColor: "#27EF9B",
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
@@ -242,24 +269,24 @@ const styles = StyleSheet.create({
   },
   contactButtonText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
     color: COLORS.white,
-    textAlign: 'center',
+    textAlign: "center",
   },
   codeSection: {
-    width: '100%',
+    width: "100%",
   },
   haveCodeText: {
     color: COLORS.black,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 8,
   },
   textinputContainer: {
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderColor: '#D8DADC',
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    borderColor: "#D8DADC",
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 12,
@@ -270,7 +297,7 @@ const styles = StyleSheet.create({
     color: COLORS.black,
     fontSize: 16,
     marginHorizontal: 8,
-    paddingVertical: Platform.OS === 'ios' ? 8 : 4,
+    paddingVertical: Platform.OS === "ios" ? 8 : 4,
   },
   verifyButton: {
     backgroundColor: COLORS.primary,
@@ -284,43 +311,43 @@ const styles = StyleSheet.create({
   verifyButtonText: {
     color: COLORS.black,
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   wrongCodeText: {
-    color: '#EA452F',
+    color: "#EA452F",
     fontSize: 14,
     marginTop: 8,
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   loadingText: {
     marginTop: 12,
     fontSize: 16,
     color: COLORS.textgrey,
-    textAlign: 'center',
+    textAlign: "center",
   },
   loadingOverlay: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    backgroundColor: "rgba(255, 255, 255, 0.7)",
     zIndex: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   loadingContent: {
     backgroundColor: COLORS.white,
     padding: 20,
     borderRadius: 10,
-    alignItems: 'center',
+    alignItems: "center",
     elevation: 3,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,

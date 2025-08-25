@@ -1,82 +1,102 @@
-import {StyleSheet, Text, View, Pressable, Alert, ScrollView, TouchableOpacity} from 'react-native';
-import React, {useEffect, useState} from 'react';
-import CustomInput from '../../components/input/CustomInput';
-import CustomeButton from '../../components/Buttons/CustomeButton';
-import {COLORS} from '../../assets/color/COLOR';
-import auth from '@react-native-firebase/auth';
-import {useNavigation} from '@react-navigation/native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {getUserData, storeUserData} from '../../services/FirebaaseFunctions';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Pressable,
+  Alert,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
+import React, { useEffect, useState } from "react";
+import CustomInput from "../../components/input/CustomInput";
+import CustomeButton from "../../components/Buttons/CustomeButton";
+import { COLORS } from "../../assets/color/COLOR";
+import auth from "@react-native-firebase/auth";
+import { useNavigation } from "@react-navigation/native";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import {
+  getUserData,
+  storeUserData,
+  logoutAndClearDevice,
+} from "../../services/FirebaaseFunctions";
 
 const UserDetailScreen = () => {
   const [name, setName] = useState();
-  const [phone, setPhone] = useState('');
-  const [cnic, setcnic] = useState('');
-  const [college, setCollege] = useState('');
-  const [city, setCity] = useState('');
+  const [phone, setPhone] = useState("");
+  const [cnic, setcnic] = useState("");
+  const [college, setCollege] = useState("");
+  const [city, setCity] = useState("");
   const navigation = useNavigation();
-  const [virified, setVirified] = useState()
+  const [virified, setVirified] = useState();
 
   const onPressSave = async () => {
     try {
-      storeUserData(auth().currentUser,virified, phone,college,city, name, cnic).then( res => {
-        if(res){
-          Alert.alert('Success', 'User Data stored Success')
+      storeUserData(
+        auth().currentUser,
+        virified,
+        phone,
+        college,
+        city,
+        name,
+        cnic
+      ).then((res) => {
+        if (res) {
+          Alert.alert("Success", "User Data stored Success");
         }
-        if(!res){
-          Alert.alert('Error', 'User Details Not Update')
+        if (!res) {
+          Alert.alert("Error", "User Details Not Update");
         }
-      })
+      });
     } catch (e) {
-      console.log('Error Storing Data');
+      console.log("Error Storing Data");
     }
   };
 
   const userData = async () => {
-    getUserData(auth().currentUser.uid).then(res => {
+    getUserData(auth().currentUser.uid).then((res) => {
       setCity(res.city);
       setName(res.name);
       setPhone(res.phone);
       setCollege(res.college);
-      setVirified(res.virified)
-      setcnic(res.cnic)
+      setVirified(res.virified);
+      setcnic(res.cnic);
     });
   };
 
   const handleDeleteAccount = async () => {
     Alert.alert(
-      'Delete Account',
-      'Are you sure you want to delete your account? This action cannot be undone.',
+      "Delete Account",
+      "Are you sure you want to delete your account? This action cannot be undone.",
       [
         {
-          text: 'Cancel',
-          style: 'cancel',
+          text: "Cancel",
+          style: "cancel",
         },
         {
-          text: 'Delete',
-          style: 'destructive',
+          text: "Delete",
+          style: "destructive",
           onPress: async () => {
             try {
               const user = auth().currentUser;
               if (!user) {
-                Alert.alert('Error', 'No user found. Please sign in again.');
+                Alert.alert("Error", "No user found. Please sign in again.");
                 return;
               }
 
               // Prompt for password re-authentication
               Alert.prompt(
-                'Confirm Password',
-                'Please enter your password to confirm account deletion',
+                "Confirm Password",
+                "Please enter your password to confirm account deletion",
                 [
                   {
-                    text: 'Cancel',
-                    style: 'cancel',
+                    text: "Cancel",
+                    style: "cancel",
                   },
                   {
-                    text: 'Confirm',
+                    text: "Confirm",
                     onPress: async (password) => {
                       if (!password) {
-                        Alert.alert('Error', 'Password is required');
+                        Alert.alert("Error", "Password is required");
                         return;
                       }
 
@@ -87,39 +107,42 @@ const UserDetailScreen = () => {
                           password
                         );
                         await user.reauthenticateWithCredential(credential);
-                        
+
                         // Now delete the account
                         await user.delete();
                         navigation.reset({
                           index: 0,
-                          routes: [{ name: 'loginScreen' }],
+                          routes: [{ name: "loginScreen" }],
                         });
                       } catch (error) {
-                        console.error('Error during re-authentication:', error);
-                        if (error.code === 'auth/wrong-password') {
-                          Alert.alert('Error', 'Incorrect password. Please try again.');
+                        console.error("Error during re-authentication:", error);
+                        if (error.code === "auth/wrong-password") {
+                          Alert.alert(
+                            "Error",
+                            "Incorrect password. Please try again."
+                          );
                         } else {
                           Alert.alert(
-                            'Error',
-                            'Failed to delete account. Please try again later.'
+                            "Error",
+                            "Failed to delete account. Please try again later."
                           );
                         }
                       }
                     },
                   },
                 ],
-                'secure-text'
+                "secure-text"
               );
             } catch (error) {
-              console.error('Error deleting account:', error);
+              console.error("Error deleting account:", error);
               Alert.alert(
-                'Error',
-                'Failed to delete account. Please try again later.'
+                "Error",
+                "Failed to delete account. Please try again later."
               );
             }
           },
         },
-      ],
+      ]
     );
   };
 
@@ -129,15 +152,17 @@ const UserDetailScreen = () => {
 
   return (
     <View style={styles.container}>
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}>
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.contentContainer}>
           <View style={styles.headerContainer}>
             <Text style={styles.mainText}>My Profile</Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.aboutButton}
-              onPress={() => navigation.navigate('AboutUs')}>
+              onPress={() => navigation.navigate("AboutUs")}
+            >
               <Text style={styles.aboutButtonText}>About Us</Text>
             </TouchableOpacity>
           </View>
@@ -146,8 +171,8 @@ const UserDetailScreen = () => {
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Full Name</Text>
               <CustomInput
-                placeholder={'Your Name'}
-                icon={'user'}
+                placeholder={"Your Name"}
+                icon={"user"}
                 value={name}
                 textchangeFunction={setName}
               />
@@ -156,9 +181,9 @@ const UserDetailScreen = () => {
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Email Address</Text>
               <CustomInput
-                placeholder={'Email address'}
-                icon={'email'}
-                value={auth().currentUser.email}
+                placeholder={"Email address"}
+                icon={"email"}
+                value={auth().currentUser?.email || ""}
                 editable={false}
               />
             </View>
@@ -166,8 +191,8 @@ const UserDetailScreen = () => {
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Phone Number</Text>
               <CustomInput
-                placeholder={'Country code & mobile number'}
-                icon={'phone'}
+                placeholder={"Country code & mobile number"}
+                icon={"phone"}
                 value={phone}
                 textchangeFunction={setPhone}
               />
@@ -176,8 +201,8 @@ const UserDetailScreen = () => {
             <View style={styles.inputContainer}>
               <Text style={styles.label}>PMDC/Medical Licensing Number</Text>
               <CustomInput
-                placeholder={'PMDC/Medical Licensing Number'}
-                icon={'v-card'}
+                placeholder={"PMDC/Medical Licensing Number"}
+                icon={"v-card"}
                 value={cnic}
                 textchangeFunction={setcnic}
               />
@@ -186,8 +211,8 @@ const UserDetailScreen = () => {
             <View style={styles.inputContainer}>
               <Text style={styles.label}>College/Degree</Text>
               <CustomInput
-                placeholder={'College & degree'}
-                icon={'graduation-cap'}
+                placeholder={"College & degree"}
+                icon={"graduation-cap"}
                 value={college}
                 textchangeFunction={setCollege}
               />
@@ -196,8 +221,8 @@ const UserDetailScreen = () => {
             <View style={styles.inputContainer}>
               <Text style={styles.label}>City & Country</Text>
               <CustomInput
-                placeholder={'City, Country'}
-                icon={'location'}
+                placeholder={"City, Country"}
+                icon={"location"}
                 value={city}
                 textchangeFunction={setCity}
               />
@@ -207,33 +232,36 @@ const UserDetailScreen = () => {
               style={styles.signOutButton}
               onPress={async () => {
                 try {
+                  // Clear device registration before signing out
+                  await logoutAndClearDevice(auth().currentUser.uid);
+
+                  // Then sign out
                   await auth().signOut();
                   navigation.reset({
                     index: 0,
-                    routes: [{ name: 'loginScreen' }],
+                    routes: [{ name: "loginScreen" }],
                   });
                 } catch (error) {
-                  console.error('Error signing out:', error);
-                  Alert.alert(
-                    'Error',
-                    'Failed to sign out. Please try again.'
-                  );
+                  console.error("Error signing out:", error);
+                  Alert.alert("Error", "Failed to sign out. Please try again.");
                 }
-              }}>
-              <Icon name={'power'} size={20} color={COLORS.white} />
+              }}
+            >
+              <Icon name={"power"} size={20} color={COLORS.white} />
               <Text style={styles.signOutText}>Sign Out</Text>
             </Pressable>
 
             <Pressable
               style={styles.deleteAccountButton}
-              onPress={handleDeleteAccount}>
-              <Icon name={'delete'} size={20} color={COLORS.white} />
+              onPress={handleDeleteAccount}
+            >
+              <Icon name={"delete"} size={20} color={COLORS.white} />
               <Text style={styles.deleteAccountText}>Delete Account</Text>
             </Pressable>
 
             <CustomeButton
-              text={virified ? 'Update Profile' : 'Save Profile'}
-              type={'primary'}
+              text={virified ? "Update Profile" : "Save Profile"}
+              type={"primary"}
               onPressFunction={onPressSave}
             />
           </View>
@@ -255,19 +283,19 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   contentContainer: {
-    width: '90%',
-    alignSelf: 'center',
+    width: "90%",
+    alignSelf: "center",
     paddingTop: 24,
   },
   headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: 24,
   },
   mainText: {
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: "700",
     color: COLORS.black,
   },
   aboutButton: {
@@ -281,52 +309,52 @@ const styles = StyleSheet.create({
   aboutButtonText: {
     color: COLORS.textgrey,
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   formContainer: {
-    width: '100%',
+    width: "100%",
   },
   inputContainer: {
-    width: '100%',
+    width: "100%",
     marginBottom: 20,
   },
   label: {
     color: COLORS.textgrey,
     fontSize: 14,
     marginBottom: 8,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   signOutButton: {
-    width: '100%',
+    width: "100%",
     marginTop: 20,
     marginBottom: 24,
     backgroundColor: COLORS.lightOrange,
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 12,
     borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   signOutText: {
     color: COLORS.white,
     marginLeft: 8,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   deleteAccountButton: {
-    width: '100%',
+    width: "100%",
     marginBottom: 24,
-    backgroundColor: '#FF3B30',
-    flexDirection: 'row',
+    backgroundColor: "#FF3B30",
+    flexDirection: "row",
     padding: 12,
     borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   deleteAccountText: {
     color: COLORS.white,
     marginLeft: 8,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
