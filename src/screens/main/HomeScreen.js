@@ -32,45 +32,6 @@ import BottomSheet, {
 } from "@gorhom/bottom-sheet";
 import { calculateDaysLeft } from "../../services/helper";
 
-const DRUGS_DATA = [
-  {
-    name: "Drug A",
-    details: "Details about Drug A",
-    img: require("../../assets/img/bannerImage.png"),
-  },
-  {
-    name: "Drug A",
-    details: "Details about Drug A",
-    img: require("../../assets/img/bannerImage.png"),
-  },
-  {
-    name: "Drug A",
-    details: "Details about Drug A",
-    img: require("../../assets/img/bannerImage.png"),
-  },
-  {
-    name: "Drug A",
-    details: "Details about Drug A",
-    img: require("../../assets/img/bannerImage.png"),
-  },
-  {
-    name: "Drug A",
-    details: "Details about Drug A",
-    img: require("../../assets/img/bannerImage.png"),
-  },
-  {
-    name: "Drug A",
-    details: "Details about Drug A",
-    img: require("../../assets/img/bannerImage.png"),
-  },
-  {
-    name: "Drug A",
-    details: "Details about Drug A",
-    img: require("../../assets/img/bannerImage.png"),
-  },
-  // Repeat this object for other entries
-];
-
 const HomeScreen = () => {
   const refRBSheet = useRef();
   const navigate = useNavigation();
@@ -122,31 +83,6 @@ const HomeScreen = () => {
   };
 
   const userData = async () => {
-    if (!auth().currentUser?.uid) {
-      const res = await checkDeviceExclusivity(auth().currentUser.uid);
-      if (!res.canLogin) {
-        Alert.alert("Can't Login", res.reason);
-        await auth().signOut();
-        navigate.reset({
-          index: 0,
-          routes: [{ name: "loginScreen" }],
-        });
-        return;
-      }
-
-      Alert.alert(
-        "Authentication Required",
-        "Please sign in to access the app.",
-        [
-          {
-            text: "OK",
-            onPress: () => navigate.navigate("Login"),
-          },
-        ]
-      );
-      return;
-    }
-
     const isComplete = await isProfileComplete(auth().currentUser.uid);
     if (!isComplete) {
       navigate.replace("profileCompletion");
@@ -154,6 +90,7 @@ const HomeScreen = () => {
     }
 
     const userData = await getUserData(auth().currentUser.uid);
+    console.log("userData =>", userData);
     setUser(userData);
   };
 

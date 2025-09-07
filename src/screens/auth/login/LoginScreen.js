@@ -20,6 +20,7 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import {
   checkDeviceExclusivity,
   logoutAndClearDevice,
+  registerDevice,
 } from "../../../services/FirebaaseFunctions";
 
 const LoginScreen = () => {
@@ -30,6 +31,33 @@ const LoginScreen = () => {
 
   const onPressRegister = () => {
     navigation.navigate("createAccount");
+  };
+
+  // Platform-specific navigation function
+  const navigateToHome = (platform) => {
+    if (platform === "android") {
+      // Android: Use a more robust navigation approach
+      setTimeout(() => {
+        try {
+          navigation.reset({
+            index: 0,
+            routes: [{ name: "tabNavigation" }],
+          });
+        } catch (error) {
+          console.error("Android navigation error:", error);
+          // Fallback: try simple navigation
+          navigation.navigate("tabNavigation");
+        }
+      }, 300); // Longer delay for Android
+    } else {
+      // iOS: Use standard navigation
+      setTimeout(() => {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "tabNavigation" }],
+        });
+      }, 100);
+    }
   };
 
   const onPresslogin = async () => {
@@ -47,8 +75,9 @@ const LoginScreen = () => {
       );
       const user = userCredential.user;
 
+      // Wait for device exclusivity check to complete
       const res = await checkDeviceExclusivity(user.uid);
-      // Alert.alert("res", res.reason);
+      console.log("Device exclusivity result:", res);
 
       if (!res.canLogin) {
         Alert.alert("Can't Login", res.reason);
@@ -56,10 +85,31 @@ const LoginScreen = () => {
         return;
       }
 
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "tabNavigation" }],
-      });
+      // Handle different device scenarios
+      if (res.canLogin && res.reason === "No device registered") {
+        // New device - register it first
+        const deviceRegistered = await registerDevice(user.uid);
+        if (deviceRegistered) {
+          console.log("Device registered successfully, navigating to home");
+          navigateToHome(Platform.OS);
+        } else {
+          console.error("Failed to register device");
+          Alert.alert("Error", "Failed to register device. Please try again.");
+          await auth().signOut();
+        }
+        return;
+      }
+
+      if (res.canLogin && res.reason === "Same device") {
+        // Same device - navigate directly
+        console.log("Same device detected, navigating to home");
+        navigateToHome(Platform.OS);
+        return;
+      }
+
+      // Fallback navigation
+      console.log("Fallback navigation to home");
+      navigateToHome(Platform.OS);
     } catch (error) {
       console.error("Login error:", error);
 

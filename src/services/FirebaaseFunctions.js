@@ -23,7 +23,6 @@ const getDeviceInfo = () => {
   };
 };
 
-// Check if user can login on this device
 export const checkDeviceExclusivity = async (uid) => {
   try {
     const userDoc = await firestore().collection("users").doc(uid).get();
@@ -32,8 +31,11 @@ export const checkDeviceExclusivity = async (uid) => {
       return { canLogin: true, reason: "New user" };
     }
 
+    const deviceIdStorage = await AsyncStorage.getItem(DEVICE_ID_KEY);
+    console.log("deviceId", deviceIdStorage);
     const userData = userDoc.data();
     const deviceInfo = getDeviceInfo();
+
     const deviceId = deviceInfo.deviceId;
 
     // Ensure we have valid data
@@ -60,18 +62,20 @@ export const checkDeviceExclusivity = async (uid) => {
 export const registerDevice = async (uid) => {
   try {
     const deviceInfo = getDeviceInfo();
+    await AsyncStorage.setItem(DEVICE_ID_KEY, deviceInfo.deviceId);
     const deviceId = deviceInfo.deviceId;
 
-    // Store device ID locally for consistency
-    await AsyncStorage.setItem(DEVICE_ID_KEY, deviceId);
-    await AsyncStorage.setItem(DEVICE_INFO_KEY, JSON.stringify(deviceInfo));
+    console.log("deviceId =>", deviceId);
+    const userDoc = await firestore().collection("users").doc(uid).get();
 
-    // Update user document with current device
-    await firestore().collection("users").doc(uid).update({
-      currentDeviceId: deviceId,
-      lastDeviceLogin: firestore.FieldValue.serverTimestamp(),
-      deviceInfo: deviceInfo,
-    });
+    if (!userDoc.exists || !userDoc.data().currentDeviceId) {
+      // Update user document with current device
+      await firestore().collection("users").doc(uid).update({
+        currentDeviceId: deviceId,
+        lastDeviceLogin: firestore.FieldValue.serverTimestamp(),
+        deviceInfo: deviceInfo,
+      });
+    }
 
     return true;
   } catch (error) {
@@ -180,6 +184,11 @@ export const setupForceLogoutListener = (uid, onForceLogout) => {
 export const logoutAndClearDevice = async (uid) => {
   try {
     // Clear local device registration
+    const deviceId = await AsyncStorage.getItem(DEVICE_ID_KEY);
+    if (!deviceId) {
+      console.warn("No device ID found in local storage.");
+      return false;
+    }
     await AsyncStorage.removeItem(DEVICE_ID_KEY);
     await AsyncStorage.removeItem(DEVICE_INFO_KEY);
 
@@ -188,11 +197,6 @@ export const logoutAndClearDevice = async (uid) => {
       currentDeviceId: null,
       lastDeviceLogin: null,
       deviceInfo: null,
-      forceLogout: false,
-      forceLogoutTimestamp: null,
-      previousDeviceId: null,
-      forceLogoutDeviceId: null,
-      forceLogoutReason: null,
     });
 
     return true;
