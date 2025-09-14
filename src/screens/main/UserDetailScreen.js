@@ -18,6 +18,7 @@ import {
   getUserData,
   storeUserData,
   logoutAndClearDevice,
+  updateUserData,
 } from "../../services/FirebaaseFunctions";
 
 const UserDetailScreen = () => {
@@ -31,24 +32,33 @@ const UserDetailScreen = () => {
 
   const onPressSave = async () => {
     try {
-      storeUserData(
-        auth().currentUser,
-        virified,
-        phone,
-        college,
-        city,
-        name,
-        cnic
-      ).then((res) => {
+      const userId = auth().currentUser.uid;
+      const userData = await getUserData(userId);
+
+      const updatedFields = {};
+      if (userData.name !== name) updatedFields.name = name;
+      if (userData.phone !== phone) updatedFields.phone = phone;
+      if (userData.college !== college) updatedFields.college = college;
+      if (userData.city !== city) updatedFields.city = city;
+      if (userData.cnic !== cnic) updatedFields.cnic = cnic;
+      if (userData.virified !== virified) updatedFields.virified = virified;
+
+      if (Object.keys(updatedFields).length > 0) {
+        const res = await Promise.all(
+          Object.entries(updatedFields).map(([fieldName, fieldValue]) =>
+            updateUserData(auth().currentUser.uid, fieldName, fieldValue)
+          )
+        );
         if (res) {
-          Alert.alert("Success", "User Data stored Success");
+          Alert.alert("Success", "User Data updated successfully");
+        } else {
+          Alert.alert("Error", "User Details Not Updated");
         }
-        if (!res) {
-          Alert.alert("Error", "User Details Not Update");
-        }
-      });
+      } else {
+        Alert.alert("Info", "No changes detected");
+      }
     } catch (e) {
-      console.log("Error Storing Data");
+      console.log("Error updating data:", e);
     }
   };
 

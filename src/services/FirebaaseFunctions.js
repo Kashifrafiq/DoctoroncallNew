@@ -208,7 +208,7 @@ export const logoutAndClearDevice = async (uid) => {
 
 export const storeUserData = async (
   user,
-  verified,
+  virified,
   phone,
   college,
   city,
@@ -219,7 +219,7 @@ export const storeUserData = async (
   try {
     await firestore().collection("users").doc(user.uid).set({
       email: user.email,
-      verified: verified,
+      virified: virified,
       name: name,
       phone: phone,
       college: college,
