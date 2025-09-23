@@ -17,6 +17,8 @@ import {
   updateUserData,
   isProfileComplete,
   updateUserVerification,
+  checkCodeStatus,
+  markCodeAsUsed,
 } from "../../services/FirebaaseFunctions";
 import auth from "@react-native-firebase/auth";
 import { useNavigation } from "@react-navigation/native";
@@ -81,14 +83,17 @@ const PaymentSheet = ({ rbSheetRef, setrefresh }) => {
 
     setIsLoading(true);
     try {
-      const response = await checkCode(code);
-      if (response === 400) {
+      const response = await checkCodeStatus(code);
+      if (!response.success) {
+        Alert.alert("Error", response.message);
         setIsCodeCorrect(true);
-      } else if (response === 200) {
+      } else if (response.success) {
+        await markCodeAsUsed(code);
         // Calculate dates
         const today = new Date();
         const expiryDate = new Date();
-        expiryDate.setMonth(expiryDate.getMonth() + 4); // 4 months from now
+        expiryDate.setMonth(expiryDate.getMonth() + 4);
+        // 4 months from now
 
         await updateUserVerification(
           auth().currentUser.uid,

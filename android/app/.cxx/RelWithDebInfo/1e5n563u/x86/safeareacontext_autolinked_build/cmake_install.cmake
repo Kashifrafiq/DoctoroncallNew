@@ -1,4 +1,4 @@
-# Install script for directory: /Users/kashif/Desktop/doctoroncall/node_modules/react-native-safe-area-context/android/src/main/jni
+# Install script for directory: /Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-safe-area-context/android/src/main/jni
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

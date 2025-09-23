@@ -1,4 +1,4 @@
-# Install script for directory: /Users/kashif/Desktop/doctoroncall/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni
+# Install script for directory: /Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

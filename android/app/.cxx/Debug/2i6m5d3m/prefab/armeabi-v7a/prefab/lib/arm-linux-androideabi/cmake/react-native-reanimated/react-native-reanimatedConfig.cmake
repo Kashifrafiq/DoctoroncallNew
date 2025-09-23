@@ -1,15 +1,17 @@
 if(NOT TARGET react-native-reanimated::reanimated)
-add_library(react-native-reanimated::reanimated INTERFACE IMPORTED)
+add_library(react-native-reanimated::reanimated SHARED IMPORTED)
 set_target_properties(react-native-reanimated::reanimated PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "/Users/kashif/Desktop/doctoroncall/node_modules/react-native-reanimated/android/build/prefab-headers/reanimated"
+    IMPORTED_LOCATION "/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-reanimated/android/build/intermediates/cxx/Debug/1j651n4s/obj/armeabi-v7a/libreanimated.so"
+    INTERFACE_INCLUDE_DIRECTORIES "/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-reanimated/android/build/prefab-headers/reanimated"
     INTERFACE_LINK_LIBRARIES ""
 )
 endif()
 
 if(NOT TARGET react-native-reanimated::worklets)
-add_library(react-native-reanimated::worklets INTERFACE IMPORTED)
+add_library(react-native-reanimated::worklets SHARED IMPORTED)
 set_target_properties(react-native-reanimated::worklets PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "/Users/kashif/Desktop/doctoroncall/node_modules/react-native-reanimated/android/build/prefab-headers/worklets"
+    IMPORTED_LOCATION "/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-reanimated/android/build/intermediates/cxx/Debug/1j651n4s/obj/armeabi-v7a/libworklets.so"
+    INTERFACE_INCLUDE_DIRECTORIES "/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-reanimated/android/build/prefab-headers/worklets"
     INTERFACE_LINK_LIBRARIES ""
 )
 endif()

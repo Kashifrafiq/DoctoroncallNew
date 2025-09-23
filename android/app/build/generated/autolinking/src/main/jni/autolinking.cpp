@@ -16,6 +16,8 @@
 #include <rnscreens.h>
 #include <react/renderer/components/rnscreens/ComponentDescriptors.h>
 #include <RNVectorIconsSpec.h>
+#include <RNCWebViewSpec.h>
+#include <react/renderer/components/RNCWebViewSpec/ComponentDescriptors.h>
 
 namespace facebook {
 namespace react {
@@ -45,6 +47,10 @@ auto module_RNVectorIconsSpec = RNVectorIconsSpec_ModuleProvider(moduleName, par
 if (module_RNVectorIconsSpec != nullptr) {
 return module_RNVectorIconsSpec;
 }
+auto module_RNCWebViewSpec = RNCWebViewSpec_ModuleProvider(moduleName, params);
+if (module_RNCWebViewSpec != nullptr) {
+return module_RNCWebViewSpec;
+}
   return nullptr;
 }
 
@@ -69,6 +75,7 @@ providerRegistry->add(concreteComponentDescriptorProvider<RNSScreenComponentDesc
 providerRegistry->add(concreteComponentDescriptorProvider<RNSScreenFooterComponentDescriptor>());
 providerRegistry->add(concreteComponentDescriptorProvider<RNSScreenContentWrapperComponentDescriptor>());
 providerRegistry->add(concreteComponentDescriptorProvider<RNSModalScreenComponentDescriptor>());
+providerRegistry->add(concreteComponentDescriptorProvider<RNCWebViewComponentDescriptor>());
   return;
 }
 

@@ -1,39 +1,71 @@
-import { Alert } from 'react-native'; 
+import { Alert } from "react-native";
+import {
+  checkCodeStatus,
+  markCodeAsUsed,
+} from "../../services/FirebaaseFunctions";
 
-export const checkCode = async (diseaseData) => {
-    const baseUrl = 'https://api.doctoroncallstp.com/authenticate-code'; // Replace with your actual API endpoint
-
-    const requestOptions = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ code: diseaseData }),
-    };
-  
-    try {
-      const response = await fetch(baseUrl, requestOptions);
-  
-      if (response.ok) {
-        // Successful response (status code in the 200 range)
-        const responseData = await response.json();
-        console.log('Successful response:', responseData);
-        return response.status; // Return the parsed response data
-      } else {
-        // Handle non-200 status codes (including 400 Bad Request)
-        const errorData = await response.json(); // Might be an error object or message
-        if (response.status === 400) {
-          if (errorData.errors && errorData.errors.length > 0) {
-            Alert.alert('Error', errorData.errors[0].message);
-          }
-        } else {
-          console.error('API request failed:', response.status, errorData);
-          // Handle other errors based on the status code and error data
-          Alert.alert('Error', 'An error occurred. Please try again later.');
-        }
-      }
-    } catch (error) {
-      console.error('Error making API request:', error);
-      Alert.alert('Error', 'Failed to communicate with the server. Please try again later.');
+// Check code status using Firestore
+export const checkCode = async (code) => {
+  try {
+    if (!code || code.trim() === "") {
+      Alert.alert("Error", "Please enter a valid code");
+      return {
+        success: false,
+        message: "Please enter a valid code",
+        status: "invalid",
+      };
     }
+
+    // Check code status in Firestore
+    const result = await checkCodeStatus(code.trim());
+
+    // Show appropriate alert based on status
+    if (result.success) {
+      Alert.alert("Success", result.message);
+    } else {
+      Alert.alert("Error", result.message);
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Error checking code:", error);
+    Alert.alert("Error", "Failed to check code. Please try again later.");
+    return {
+      success: false,
+      message: "Failed to check code. Please try again later.",
+      status: "error",
+    };
+  }
+};
+
+// Mark code as used (for when user successfully verifies)
+export const useCode = async (code) => {
+  try {
+    if (!code || code.trim() === "") {
+      Alert.alert("Error", "Please enter a valid code");
+      return {
+        success: false,
+        message: "Please enter a valid code",
+      };
+    }
+
+    // Mark code as used in Firestore
+    const result = await markCodeAsUsed(code.trim());
+
+    // Show appropriate alert based on result
+    if (result.success) {
+      Alert.alert("Success", result.message);
+    } else {
+      Alert.alert("Error", result.message);
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Error using code:", error);
+    Alert.alert("Error", "Failed to use code. Please try again later.");
+    return {
+      success: false,
+      message: "Failed to use code. Please try again later.",
+    };
+  }
 };

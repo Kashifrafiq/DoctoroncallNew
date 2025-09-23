@@ -1,42 +1,44 @@
-C/C++ Structured Log™
-–
-“/Users/kashif/Desktop/doctoroncall/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/CMakeLists.txtC
-A
-?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	æÂƒ›”3Å ö´—¹ú2Œ
-‰
-†/Users/kashif/Desktop/doctoroncall/node_modules/react-native-gesture-handler/android/build/generated/source/codegen/jni/CMakeLists.txt	æÂƒ›”3 ´º—¹ú2‡
-„
-/Users/kashif/Desktop/doctoroncall/node_modules/react-native-reanimated/android/build/generated/source/codegen/jni/CMakeLists.txt	æÂƒ›”3¹ ¡¿—¹ú2Ä
-Á
-¾/Users/kashif/Desktop/doctoroncall/node_modules/react-native-reanimated/android/build/intermediates/prefab_package_configuration/release/prefabReleaseConfigurePackage/prefab_publication.json	æÂƒ›”3v
-t
-r/Users/kashif/Desktop/doctoroncall/node_modules/react-native-safe-area-context/android/src/main/jni/CMakeLists.txt	æÂƒ›”3à ÆĞ¤½è2l
-j
-h/Users/kashif/Desktop/doctoroncall/node_modules/react-native-screens/android/src/main/jni/CMakeLists.txt	æÂƒ›”3Ÿ ËÓ¤½è2‰
-†
-ƒ/Users/kashif/Desktop/doctoroncall/node_modules/react-native-vector-icons/android/build/generated/source/codegen/jni/CMakeLists.txt	çÂƒ›”3× Ş¼¿®ò2|
+C/C++ Structured Log|
 z
-x/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/RelWithDebInfo/1e5n563u/x86/additional_project_files.txt	çÂƒ›”3	•3 è¼ï«û2y
+x/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/RelWithDebInfo/1e5n563u/x86/additional_project_files.txtC
+A
+?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	¾¸Öª—3¾? ‘à´¤—3y
 w
-u/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/RelWithDebInfo/1e5n563u/x86/android_gradle_build.json	çÂƒ›”3
-®+ í¼ï«û2~
+u/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/RelWithDebInfo/1e5n563u/x86/android_gradle_build.json	¾¸Öª—3µ. “à´¤—3~
 |
-z/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/RelWithDebInfo/1e5n563u/x86/android_gradle_build_mini.json	çÂƒ›”3°' Â½ï«û2k
+z/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/RelWithDebInfo/1e5n563u/x86/android_gradle_build_mini.json	¾¸Öª—3±* ¤à´¤—3k
 i
-g/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/RelWithDebInfo/1e5n563u/x86/build.ninja	çÂƒ›”3ü¼ ‰¼ï«û2o
+g/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/RelWithDebInfo/1e5n563u/x86/build.ninja	¾¸Öª—3‹ü äß´¤—3o
 m
-k/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/RelWithDebInfo/1e5n563u/x86/build.ninja.txt	çÂƒ›”3t
+k/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/RelWithDebInfo/1e5n563u/x86/build.ninja.txt	¾¸Öª—3t
 r
-p/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/RelWithDebInfo/1e5n563u/x86/build_file_index.txt	çÂƒ›”3ÿ ¬™‡Şù2u
+p/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/RelWithDebInfo/1e5n563u/x86/build_file_index.txt	¾¸Öª—3Ò ¦à´¤—3u
 s
-q/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/RelWithDebInfo/1e5n563u/x86/compile_commands.json	çÂƒ›”3Úñ ‚¼ï«û2y
+q/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/RelWithDebInfo/1e5n563u/x86/compile_commands.json	¾¸Öª—3ã‡	 ãß´¤—3y
 w
-u/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/RelWithDebInfo/1e5n563u/x86/compile_commands.json.bin	çÂƒ›”3³Ç ‚¼ï«û2
+u/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/RelWithDebInfo/1e5n563u/x86/compile_commands.json.bin	¾¸Öª—3	†æ ãß´¤—3
 }
-{/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/RelWithDebInfo/1e5n563u/x86/metadata_generation_command.txt	çÂƒ›”3È «™‡Şù2r
+{/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/RelWithDebInfo/1e5n563u/x86/metadata_generation_command.txt	¾¸Öª—3
+È «™‡Şù2r
 p
-n/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/RelWithDebInfo/1e5n563u/x86/prefab_config.json	çÂƒ›”3Ì «™‡Şù2w
+n/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/RelWithDebInfo/1e5n563u/x86/prefab_config.json	¾¸Öª—3Ø «¸ù—3w
 u
-s/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/RelWithDebInfo/1e5n563u/x86/symbol_folder_index.txt	çÂƒ›”3r ¬™‡Şù2ˆ
+s/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/RelWithDebInfo/1e5n563u/x86/symbol_folder_index.txt	¾¸Öª—3r ¬™‡Şù2¥
+¢
+Ÿ/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/CMakeLists.txt	¾¸Öª—3Å ¢µ›£—3˜
+•
+’/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-gesture-handler/android/build/generated/source/codegen/jni/CMakeLists.txt	¾¸Öª—3 ê¹›£—3“
+
+/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-reanimated/android/build/generated/source/codegen/jni/CMakeLists.txt	¾¸Öª—3¹ ´¿›£—3Ğ
+Í
+Ê/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-reanimated/android/build/intermediates/prefab_package_configuration/release/prefabReleaseConfigurePackage/prefab_publication.json	¾¸Öª—3ƒ
+€
+~/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-safe-area-context/android/src/main/jni/CMakeLists.txt	¾¸Öª—3à ˜³í•—3x
+v
+t/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-screens/android/src/main/jni/CMakeLists.txt	¾¸Öª—3Ÿ ¦Éí•—3•
+’
+/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-vector-icons/android/build/generated/source/codegen/jni/CMakeLists.txt	¾¸Öª—3× çÍ›£—3
+
+Š/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-webview/android/build/generated/source/codegen/jni/CMakeLists.txt	¾¸Öª—3Å £Ò›£—3ˆ
 …
-‚/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native/ReactAndroid/cmake-utils/default-app-setup/CMakeLists.txt	çÂƒ›”3ğ  †¼è2
+‚/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native/ReactAndroid/cmake-utils/default-app-setup/CMakeLists.txt	¾¸Öª—3ğ Ú¥ï•—3

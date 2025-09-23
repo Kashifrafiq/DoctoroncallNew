@@ -50,6 +50,7 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   include("/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/Debug/2i6m5d3m/x86_64/safeareacontext_autolinked_build/cmake_install.cmake")
   include("/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/Debug/2i6m5d3m/x86_64/rnscreens_autolinked_build/cmake_install.cmake")
   include("/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/Debug/2i6m5d3m/x86_64/RNVectorIconsSpec_autolinked_build/cmake_install.cmake")
+  include("/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/Debug/2i6m5d3m/x86_64/RNCWebViewSpec_autolinked_build/cmake_install.cmake")
 
 endif()
 

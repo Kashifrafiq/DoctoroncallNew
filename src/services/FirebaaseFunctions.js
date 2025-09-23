@@ -1,17 +1,13 @@
 import firestore from "@react-native-firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
+import DeviceInfo from "react-native-device-info";
 
 // Device exclusivity constants
 const DEVICE_ID_KEY = "current_device_id";
 const DEVICE_INFO_KEY = "device_info";
 
 // Generate a unique device identifier
-const generateDeviceId = () => {
-  const timestamp = Date.now();
-  const random = Math.random().toString(36).substring(2);
-  return `${Platform.OS}_${timestamp}_${random}`;
-};
 
 // Get device information
 const getDeviceInfo = () => {
@@ -19,7 +15,6 @@ const getDeviceInfo = () => {
     platform: Platform.OS,
     version: Platform.Version,
     timestamp: Date.now(),
-    deviceId: generateDeviceId(),
   };
 };
 
@@ -31,12 +26,10 @@ export const checkDeviceExclusivity = async (uid) => {
       return { canLogin: true, reason: "New user" };
     }
 
-    const deviceIdStorage = await AsyncStorage.getItem(DEVICE_ID_KEY);
-    console.log("deviceId", deviceIdStorage);
     const userData = userDoc.data();
-    const deviceInfo = getDeviceInfo();
+    const deviceInfo = Platform.OS;
 
-    const deviceId = deviceInfo.deviceId;
+    const deviceId = await DeviceInfo.getUniqueId();
 
     // Ensure we have valid data
     if (!userData || typeof userData.currentDeviceId !== "string") {
@@ -58,23 +51,25 @@ export const checkDeviceExclusivity = async (uid) => {
   }
 };
 
-// Register current device for user
 export const registerDevice = async (uid) => {
   try {
-    const deviceInfo = getDeviceInfo();
-    await AsyncStorage.setItem(DEVICE_ID_KEY, deviceInfo.deviceId);
-    const deviceId = deviceInfo.deviceId;
+    const deviceId = await DeviceInfo.getUniqueId();
+    const deviceInfo = Platform.OS;
+    console.log("device platform =>", deviceInfo);
+    console.log("device id =>", deviceId);
 
-    console.log("deviceId =>", deviceId);
     const userDoc = await firestore().collection("users").doc(uid).get();
 
     if (!userDoc.exists || !userDoc.data().currentDeviceId) {
-      // Update user document with current device
-      await firestore().collection("users").doc(uid).update({
-        currentDeviceId: deviceId,
-        lastDeviceLogin: firestore.FieldValue.serverTimestamp(),
-        deviceInfo: deviceInfo,
-      });
+      const updatedData = await firestore()
+        .collection("users")
+        .doc(uid)
+        .update({
+          currentDeviceId: deviceId,
+          lastDeviceLogin: firestore.FieldValue.serverTimestamp(),
+          platform: deviceInfo,
+        });
+      console.log("updatedData =>", updatedData);
     }
 
     return true;
@@ -183,16 +178,6 @@ export const setupForceLogoutListener = (uid, onForceLogout) => {
 // Logout user and clear device registration
 export const logoutAndClearDevice = async (uid) => {
   try {
-    // Clear local device registration
-    const deviceId = await AsyncStorage.getItem(DEVICE_ID_KEY);
-    if (!deviceId) {
-      console.warn("No device ID found in local storage.");
-      return false;
-    }
-    await AsyncStorage.removeItem(DEVICE_ID_KEY);
-    await AsyncStorage.removeItem(DEVICE_INFO_KEY);
-
-    // Update user document to remove current device
     await firestore().collection("users").doc(uid).update({
       currentDeviceId: null,
       lastDeviceLogin: null,
@@ -260,7 +245,7 @@ export const updateUserVerification = async (
       verifiedAt: verifiedAt,
       expiryDate: expiryDate,
     };
-
+    console.log(updateData, "updateData");
     await firestore().collection("users").doc(userId).update(updateData);
     return true;
   } catch (error) {
@@ -399,5 +384,114 @@ export const getDaysUntilExpiry = (expiryDate) => {
   } catch (error) {
     console.error("Error calculating days until expiry:", error);
     return 0;
+  }
+};
+
+// Check code status in Firestore
+export const checkCodeStatus = async (code) => {
+  try {
+    if (!code || typeof code !== "string") {
+      return {
+        success: false,
+        message: "Invalid code provided",
+        status: "invalid",
+      };
+    }
+
+    // Query the codes collection for the specific code
+    const codesSnapshot = await firestore()
+      .collection("codes")
+      .where("code", "==", code)
+      .limit(1)
+      .get();
+
+    // Check if code exists
+    if (codesSnapshot.empty) {
+      return {
+        success: false,
+        message: "Code not found",
+        status: "not_found",
+      };
+    }
+
+    // Get the first (and should be only) document
+    const codeDoc = codesSnapshot.docs[0];
+    const codeData = codeDoc.data();
+
+    // Check if code is already used
+    if (codeData.used === true) {
+      return {
+        success: false,
+        message: "Code is already used",
+        status: "used",
+      };
+    }
+
+    // Code exists and is not used - it's active
+    return {
+      success: true,
+      message: "Code is active",
+      status: "active",
+      codeId: codeDoc.id,
+      codeData: codeData,
+    };
+  } catch (error) {
+    console.error("Error checking code status:", error);
+    return {
+      success: false,
+      message: "Error checking code status",
+      status: "error",
+    };
+  }
+};
+
+// Mark code as used
+export const markCodeAsUsed = async (code) => {
+  try {
+    if (!code || typeof code !== "string") {
+      return {
+        success: false,
+        message: "Invalid code provided",
+      };
+    }
+
+    // First check if code exists and is not used
+    const codeStatus = await checkCodeStatus(code);
+
+    if (!codeStatus.success) {
+      return codeStatus; // Return the error from checkCodeStatus
+    }
+
+    // Update the code document to mark it as used
+    const codesSnapshot = await firestore()
+      .collection("codes")
+      .where("code", "==", code)
+      .limit(1)
+      .get();
+
+    if (!codesSnapshot.empty) {
+      const codeDoc = codesSnapshot.docs[0];
+      await codeDoc.ref.update({
+        used: true,
+        usedAt: firestore.FieldValue.serverTimestamp(),
+      });
+
+      return {
+        success: true,
+        message: "Code marked as used successfully",
+        codeId: codeDoc.id,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Code not found",
+    };
+  } catch (error) {
+    console.error("Error marking code as used:", error);
+    return {
+      success: false,
+      message: "Error marking code as used",
+    };
   }
 };

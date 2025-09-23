@@ -19,3 +19,6 @@
 /Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/RelWithDebInfo/1e5n563u/arm64-v8a/RNVectorIconsSpec_autolinked_build/CMakeFiles/react_codegen_RNVectorIconsSpec.dir
 /Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/RelWithDebInfo/1e5n563u/arm64-v8a/RNVectorIconsSpec_autolinked_build/CMakeFiles/edit_cache.dir
 /Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/RelWithDebInfo/1e5n563u/arm64-v8a/RNVectorIconsSpec_autolinked_build/CMakeFiles/rebuild_cache.dir
+/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/RelWithDebInfo/1e5n563u/arm64-v8a/RNCWebViewSpec_autolinked_build/CMakeFiles/react_codegen_RNCWebViewSpec.dir
+/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/RelWithDebInfo/1e5n563u/arm64-v8a/RNCWebViewSpec_autolinked_build/CMakeFiles/edit_cache.dir
+/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/RelWithDebInfo/1e5n563u/arm64-v8a/RNCWebViewSpec_autolinked_build/CMakeFiles/rebuild_cache.dir
