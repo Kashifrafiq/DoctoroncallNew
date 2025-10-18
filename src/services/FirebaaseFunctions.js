@@ -59,8 +59,9 @@ export const registerDevice = async (uid) => {
     console.log("device id =>", deviceId);
 
     const userDoc = await firestore().collection("users").doc(uid).get();
+    console.log(userDoc.data(), "USer Data ");
 
-    if (!userDoc.exists || !userDoc.data().currentDeviceId) {
+    if (!userDoc?.exists || !userDoc.data()?.currentDeviceId) {
       const updatedData = await firestore()
         .collection("users")
         .doc(uid)

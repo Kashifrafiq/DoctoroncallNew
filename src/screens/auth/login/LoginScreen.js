@@ -19,6 +19,7 @@ import auth from "@react-native-firebase/auth";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import {
   checkDeviceExclusivity,
+  isProfileComplete,
   logoutAndClearDevice,
   registerDevice,
 } from "../../../services/FirebaaseFunctions";
@@ -75,47 +76,57 @@ const LoginScreen = () => {
       );
       const user = userCredential.user;
 
-      // Wait for device exclusivity check to complete
-      const res = await checkDeviceExclusivity(user.uid);
-      console.log("Device exclusivity result:", res);
+      const isCompleted = await isProfileComplete(user.uid);
 
-      if (!res.canLogin) {
-        Alert.alert("Can't Login", res.reason);
-        await auth().signOut(); // Sign out if device check fails
-        return;
-      }
+      if (!isCompleted) {
+        navigation.navigate("profileCompletion");
+      } else {
+        const res = await checkDeviceExclusivity(user.uid);
+        console.log("Device exclusivity result:", res);
 
-      // Handle different device scenarios
-      if (res.canLogin && res.reason === "No device registered") {
-        // New device - register it first
-        const deviceRegistered = await registerDevice(user.uid);
-        if (deviceRegistered) {
-          console.log("Device registered successfully, navigating to home");
-          navigateToHome(Platform.OS);
-        } else {
-          console.error("Failed to register device");
-          Alert.alert("Error", "Failed to register device. Please try again.");
-          await auth().signOut();
+        if (!res.canLogin) {
+          Alert.alert("Can't Login", res.reason);
+          await auth().signOut(); // Sign out if device check fails
+          return;
         }
-        return;
-      }
 
-      if (res.canLogin && res.reason === "Same device") {
-        // Same device - navigate directly
-        console.log("Same device detected, navigating to home");
+        // Handle different device scenarios
+        if (res.canLogin && res.reason === "No device registered") {
+          // New device - regxister it first
+          const deviceRegistered = await registerDevice(user.uid);
+          if (deviceRegistered) {
+            console.log("Device registered successfully, navigating to home");
+            navigateToHome(Platform.OS);
+          } else {
+            console.error("Failed to register device");
+            Alert.alert(
+              "Error",
+              "Failed to register device. Please try again."
+            );
+            await auth().signOut();
+          }
+          return;
+        }
+
+        if (res.canLogin && res.reason === "Same device") {
+          // Same device - navigate directly
+          console.log("Same device detected, navigating to home");
+          navigateToHome(Platform.OS);
+          return;
+        }
+
+        // Fallback navigation
+        console.log("Fallback navigation to home");
         navigateToHome(Platform.OS);
-        return;
       }
 
-      // Fallback navigation
-      console.log("Fallback navigation to home");
-      navigateToHome(Platform.OS);
+      // Wait for device exclusivity check to complete
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("Login error:", error.code);
 
       let errorMessage = "An error occurred. Please try again.";
-      if (error.code === "auth/invalid-email") {
-        errorMessage = "Invalid email address.";
+      if (error.code === "auth/invalid-credential") {
+        errorMessage = "Invalid email address or password";
       } else if (error.code === "auth/wrong-password") {
         errorMessage = "Incorrect password.";
       } else if (error.code === "auth/user-not-found") {
