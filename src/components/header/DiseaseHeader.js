@@ -1,21 +1,28 @@
-import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import React, {useEffect, useState} from 'react';
-import {COLORS} from '../../assets/color/COLOR';
-import Icon from 'react-native-vector-icons/Entypo';
-import {storeData, getData} from '../../services/localStorage';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { COLORS } from "../../assets/color/COLOR";
+import Icon from "react-native-vector-icons/Entypo";
+import { storeData, getData } from "../../services/localStorage";
+import LOGO from "../../assets/img/logo.png";
 
-const DiseaseHeader = ({img, mainText, secText, id, disable, diseaseID, type}) => {
+const DiseaseHeader = ({
+  img,
+  mainText,
+  secText,
+  id,
+  disable,
+  diseaseID,
+  type,
+}) => {
   const [isliked, setisLiked] = useState(false);
-
-
 
   const checkData = async () => {
     try {
-      const existingData = await getData('fvrt');
-      console.log('This is existing Data', existingData);
+      const existingData = await getData("fvrt");
+      console.log("This is existing Data", existingData);
 
       const isAlreadyLiked = existingData?.some(
-        item => item.diseaseID === diseaseID,
+        (item) => item.diseaseID === diseaseID
       );
       if (isAlreadyLiked) {
         setisLiked(true);
@@ -23,7 +30,7 @@ const DiseaseHeader = ({img, mainText, secText, id, disable, diseaseID, type}) =
         setisLiked(false);
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error("Error fetching data:", error);
     }
   };
 
@@ -34,7 +41,7 @@ const DiseaseHeader = ({img, mainText, secText, id, disable, diseaseID, type}) =
   const onPressHeart = async () => {
     try {
       console.log(id);
-      const existingData = await getData('fvrt');
+      const existingData = await getData("fvrt");
       // console.log('Recent Data', existingData);
 
       const isEmpty =
@@ -43,53 +50,70 @@ const DiseaseHeader = ({img, mainText, secText, id, disable, diseaseID, type}) =
         existingData === null;
 
       if (isEmpty) {
-        await storeData('fvrt', [{catId: id, diseaseID: diseaseID}]);
+        await storeData("fvrt", [{ catId: id, diseaseID: diseaseID }]);
         setisLiked(true);
       } else {
         // const isAlreadyLiked = existingData?.includes(d);
         const isAlreadyLiked = existingData?.some(
-          item => item.diseaseID === diseaseID,
+          (item) => item.diseaseID === diseaseID
         );
         if (isAlreadyLiked) {
           const newData = existingData.filter(
-            disease => disease.diseaseID !== diseaseID,
+            (disease) => disease.diseaseID !== diseaseID
           );
-          console.log('New Data', newData);
-          await storeData('fvrt', newData);
+          console.log("New Data", newData);
+          await storeData("fvrt", newData);
           setisLiked(false);
         } else {
-          const newData = [...existingData, {catId: id, diseaseID: diseaseID}];
-          await storeData('fvrt', newData);
+          const newData = [
+            ...existingData,
+            { catId: id, diseaseID: diseaseID },
+          ];
+          await storeData("fvrt", newData);
           setisLiked(true);
         }
       }
     } catch (e) {
-      console.error('Error adding/removing ID to local storage:', e);
+      console.error("Error adding/removing ID to local storage:", e);
     }
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.leftContainer}>
-        <Image
-          source={{uri: img}}
-          alt="Image"
-          style={styles.image}
-          resizeMode="contain"
-        />
+        {img &&
+        typeof img === "string" &&
+        img.trim() !== "" &&
+        img !== "null" &&
+        img !== "undefined" ? (
+          <Image
+            source={{ uri: img }}
+            alt="Image"
+            style={styles.image}
+            resizeMode="contain"
+          />
+        ) : (
+          <View style={[styles.image, styles.placeholderContainer]}>
+            {<Image source={LOGO} style={styles.image} resizeMode="contain" />}
+            {/* <Icons name="file-media" size={40} color={COLORS.greylight} /> */}
+          </View>
+        )}
       </View>
       <View style={styles.middleContainer}>
         <Text style={styles.mainText}>{mainText}</Text>
-        <Text style={styles.secText}>{secText} {type} discussed</Text>
+        <Text style={styles.secText}>
+          {secText} {type} discussed
+        </Text>
       </View>
 
       <TouchableOpacity
         style={styles.rightContainer}
         onPress={onPressHeart}
-        disabled={disable}>
+        disabled={disable}
+      >
         {disable ? null : (
           <Icon
-            name={'heart'}
+            name={"heart"}
             size={50}
             color={isliked ? COLORS.lightOrange : COLORS.white}
           />
@@ -104,33 +128,33 @@ export default DiseaseHeader;
 const styles = StyleSheet.create({
   container: {
     backgroundColor: COLORS.cardColor,
-    width: '100%',
-    height: '10%',
+    width: "100%",
+    height: "10%",
     padding: 10,
     borderRadius: 20,
     marginTop: 10,
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+    alignItems: "center",
   },
   leftContainer: {
-    width: '20%',
-    height: '90%',
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: "20%",
+    height: "90%",
+    justifyContent: "center",
+    alignItems: "center",
   },
   image: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   middleContainer: {
-    width: '50%',
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start',
+    width: "50%",
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
   },
   mainText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     color: COLORS.black,
   },
   secText: {
@@ -138,9 +162,9 @@ const styles = StyleSheet.create({
     color: COLORS.black,
   },
   rightContainer: {
-    width: '20%',
-    height: '90%',
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: "20%",
+    height: "90%",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
