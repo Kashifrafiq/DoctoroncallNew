@@ -65,7 +65,7 @@ const HomeScreen = () => {
       setIsLoading(true);
       const data = await getDiseasesCatogery();
       setDISEASE_DATA(data);
-      // console.log('Diseases:', data);
+      console.log('Diseases:', data);  
     } catch (error) {
       console.error("Error getting diseases:", error);
     } finally {
@@ -148,6 +148,9 @@ const HomeScreen = () => {
         acf: item.acf,
         name: item.title.rendered,
         id: item.id,
+        sections: item.sections,
+        shortDescription: item.shortDescription,
+        htmlContent: item.htmlContent,
         category: category, // Pass the category to the next screen
       });
     } catch (error) {
@@ -221,11 +224,13 @@ const HomeScreen = () => {
                       : item[`drug_category`],
                     item.type
                   );
-                  console.log("cat:", item.type);
                   navigate.navigate("diseaseInfoScreen", {
                     acf: item.acf,
                     name: item.title.rendered,
                     id: item.id,
+                    sections: item.sections,
+                    shortDescription: item.shortDescription,
+                    htmlContent: item.htmlContent,
                     catData: {
                       diseaseId: cat.id,
                       image: cat.acf.category_image,
@@ -333,10 +338,10 @@ const HomeScreen = () => {
         renderItem={({ item, index }) => (
           <PrimaryCard
             mainText={item.name}
-            secondaryText={item.count}
-            img={item.acf.category_image}
-            paid={!user?.virified && index !== 0}
-            bgColor={item.acf.color}
+            secondaryText={item.diseaseCount}
+            img={item.imageUrl}
+            paid={false}
+            bgColor={item.color}
             id={item.id}
             type={activeTab}
             rbSheetRef={refRBSheet}

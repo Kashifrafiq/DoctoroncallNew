@@ -6,13 +6,20 @@ import Icon from 'react-native-vector-icons/AntDesign';
 import {useNavigation} from '@react-navigation/native';
 import {storeData, getData} from '../../services/localStorage';
 
-const NameCard = ({name, acf, catData, id}) => {
+const NameCard = ({
+  name,
+  acf,
+  catData,
+  id,
+  sections,
+  shortDescription,
+  htmlContent,
+}) => {
   const navigate = useNavigation();
 
   const onPressCard = async () => {
     try {
       const existingData = await getData('recent');
-      console.log('Recent Data', existingData);
 
       const isEmpty =
         !Array.isArray(existingData) ||
@@ -21,7 +28,6 @@ const NameCard = ({name, acf, catData, id}) => {
 
       if (isEmpty) {
         await storeData('recent', [{catId: catData?.diseaseId, diseaseID: id}]);
-        setisLiked(true);
       } else {
         // const isAlreadyLiked = existingData?.includes(d);
         const isAlreadyLiked = existingData?.some(
@@ -44,10 +50,13 @@ const NameCard = ({name, acf, catData, id}) => {
       console.error('Error adding/removing ID to local storage:', e);
     }
     navigate.navigate('diseaseInfoScreen', {
-      acf: acf,
-      catData: catData,
-      name: name,
-      id: id,
+      acf,
+      catData,
+      name,
+      id,
+      sections,
+      shortDescription,
+      htmlContent,
     });
   };
   return (

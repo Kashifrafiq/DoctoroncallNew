@@ -1,12 +1,12 @@
 import {
   FlatList,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  useWindowDimensions,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Header from "../../components/header/Header";
 import DiseaseHeader from "../../components/header/DiseaseHeader";
 import Icon from "react-native-vector-icons/AntDesign";
@@ -14,106 +14,121 @@ import { COLORS } from "../../assets/color/COLOR";
 import { useNavigation, useRoute } from "@react-navigation/native";
 // import HTMLView from 'react-native-htmlview';
 import { ScrollView } from "react-native-gesture-handler";
-import HTML from "react-native-render-html";
+import WebView from "react-native-webview";
+import ImageViewing from "react-native-image-viewing";
 
-const DATA = [
-  {
-    name: "Definition",
-    desc: "A heart attack, also called a myocardial infarction, happens when a part of the heart muscle doesnt get enough blood. The more time that passes without treatment to restore blood flow, the greater the damage to the heart muscle. Coronary artery disease (CAD) is the main cause of heart attack.",
-  },
-  {
-    name: "Definition",
-    desc: "A heart attack, also called a myocardial infarction, happens when a part of the heart muscle doesnt get enough blood. The more time that passes without treatment to restore blood flow, the greater the damage to the heart muscle. Coronary artery disease (CAD) is the main cause of heart attack.",
-  },
-  {
-    name: "Definition",
-    desc: "A heart attack, also called a myocardial infarction, happens when a part of the heart muscle doesnt get enough blood. The more time that passes without treatment to restore blood flow, the greater the damage to the heart muscle. Coronary artery disease (CAD) is the main cause of heart attack.",
-  },
-  {
-    name: "Definition",
-    desc: "A heart attack, also called a myocardial infarction, happens when a part of the heart muscle doesnt get enough blood. The more time that passes without treatment to restore blood flow, the greater the damage to the heart muscle. Coronary artery disease (CAD) is the main cause of heart attack.",
-  },
-  {
-    name: "Definition",
-    desc: "A heart attack, also called a myocardial infarction, happens when a part of the heart muscle doesnt get enough blood. The more time that passes without treatment to restore blood flow, the greater the damage to the heart muscle. Coronary artery disease (CAD) is the main cause of heart attack.",
-  },
-];
+const HTMLWebViewContent = ({ html, onImagePress }) => {
+  const [contentHeight, setContentHeight] = useState(0);
+  const webViewRef = useRef(null);
 
-const html = StyleSheet.create({
-  a: {
-    color: "#FF3366",
-  },
-  p: {
-    color: COLORS.black,
-  },
-  div: {
-    color: COLORS.black,
-  },
-  span: {
-    color: "#993300",
-  },
-  h1: {
-    color: COLORS.black,
-  },
-  h2: {
-    color: COLORS.black,
-  },
-  h3: {
-    color: COLORS.black,
-  },
-  ul: {
-    color: COLORS.black,
-  },
-  li: {
-    color: COLORS.black,
-  },
-  b: {
-    color: COLORS.black,
-  },
-  i: {
-    color: COLORS.black,
-  },
-  strong: {
-    color: "#993300",
-    fontWeight: "bold",
-  },
-  table: {
-    borderWidth: 1,
-    borderColor: "#993300",
-    marginVertical: 10,
-  },
-  tr: {
-    flexDirection: "row",
-    borderBottomWidth: 1,
-    borderBottomColor: "#993300",
-  },
-  th: {
-    flex: 1,
-    padding: 8,
-    fontWeight: "bold",
-    backgroundColor: "#f5f5f5",
-  },
-  td: {
-    flex: 1,
-    padding: 8,
-  },
-  "td:first-child": {
-    fontWeight: "bold",
-  },
-  p: {
-    color: COLORS.black,
-    fontSize: 14,
-    marginBottom: 10,
-    lineHeight: 20,
-  },
-});
+  useEffect(() => {
+    setContentHeight(0);
+  }, [html]);
 
-const cleanText = (text) => text.replace(/\n+/g, "\n").trim();
+  if (!html) return null;
 
-const InfoCard = ({ property, desc }) => {
-  const { width } = useWindowDimensions();
+  const measureHeightJS = `
+    (function() {
+      var content = document.getElementById('content');
+      if (!content) return;
+      var h = content.offsetHeight + 20;
+      window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'height', value: h }));
+    })();
+    true;
+  `;
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          html, body { width: 100%; height: auto !important; overflow: visible; }
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #111;
+           background-color: ${COLORS.infocardBG};
+            padding: 10px;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+          }
+          h1, h2, h3, h4, h5, h6 { color: #111; margin: 10px 0; }
+          p { margin: 10px 0; }
+          ul, ol { margin: 10px 0; padding-left: 20px; }
+          li { margin: 4px 0; }
+          table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+          th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+          th { background: #f0f0f0; }
+          img { max-width: 100%; width: 100%; height: auto; display: block; border-radius: 4px; margin: 10px 0; }
+          a { color: #d63384; text-decoration: none; }
+          pre { overflow-x: auto; background: #efefef; padding: 8px; border-radius: 4px; }
+          code { background: #efefef; padding: 2px 4px; border-radius: 4px; }
+        </style>
+      </head>
+      <body>
+        <div id="content">${html}</div>
+        <script>
+          document.addEventListener('click', function(e) {
+            var el = e.target;
+            if (el && el.tagName === 'IMG' && el.src) {
+              e.preventDefault();
+              window.ReactNativeWebView.postMessage(
+                JSON.stringify({ type: 'imagePress', value: el.src })
+              );
+            }
+          });
+        </script>
+      </body>
+    </html>
+  `;
+
+  const handleMessage = (event) => {
+    try {
+      const data = JSON.parse(event.nativeEvent.data);
+      if (data.type === "height" && typeof data.value === "number" && data.value > 0) {
+        setContentHeight(data.value);
+      } else if (data.type === "imagePress" && data.value && onImagePress) {
+        onImagePress(data.value);
+      }
+    } catch (_e) {}
+  };
+
+  const onLoadEnd = () => {
+    setTimeout(() => {
+      webViewRef.current?.injectJavaScript(measureHeightJS);
+    }, 250);
+    setTimeout(() => {
+      webViewRef.current?.injectJavaScript(measureHeightJS);
+    }, 700);
+  };
+
+  return (
+    <View style={styles.webViewContainer}>
+      <WebView
+        ref={webViewRef}
+        source={{ html: htmlContent }}
+        onMessage={handleMessage}
+        onLoadEnd={onLoadEnd}
+        javaScriptEnabled
+        scrollEnabled={false}
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
+        style={[
+          styles.webView,
+          { height: contentHeight > 0 ? contentHeight : 1, opacity: contentHeight > 0 ? 1 : 0 },
+        ]}
+      />
+    </View>
+  );
+};
+
+const InfoCard = ({ property, desc, onImagePress }) => {
   const [showInfo, setShowInfo] = useState(false);
-  console.log("Desc:", desc);
 
   return (
     <View style={styles.inforcardContainer}>
@@ -133,14 +148,7 @@ const InfoCard = ({ property, desc }) => {
 
       {showInfo ? (
         <View style={styles.inforcardTextArea}>
-          <HTML
-            contentWidth={width}
-            source={{ html: desc }}
-            tagsStyles={html}
-            ignoredDomTags={["iframe", "script"]}
-            imagesMaxWidth={width - 40} // Account for padding
-            baseFontStyle={{ color: COLORS.black, fontSize: 14 }}
-          />
+          <HTMLWebViewContent html={desc} onImagePress={onImagePress} />
         </View>
       ) : null}
     </View>
@@ -148,15 +156,26 @@ const InfoCard = ({ property, desc }) => {
 };
 
 const DiseaseInfoScreen = () => {
-  const [showInfo, setShowInfo] = useState(true);
   const navigation = useNavigation();
+  const [viewingImage, setViewingImage] = useState(null);
 
   const route = useRoute();
   const data = route.params;
 
-  useEffect(() => {
-    console.log("Data from route: ", data);
-  }, []);
+  /** Prefer backend `sections: { header, htmlContent }[]`; fallback to legacy acf Q&A. */
+  const sectionRows = useMemo(() => {
+    if (Array.isArray(data?.sections) && data.sections.length > 0) {
+      return data.sections.map((s) => ({
+        header: s.header ?? s.question ?? "",
+        htmlContent: s.htmlContent ?? s.answer ?? "",
+      }));
+    }
+    const qa = data?.acf?.["questions_&_answers"] ?? [];
+    return qa.map((row) => ({
+      header: row.header ?? row.question ?? "",
+      htmlContent: row.htmlContent ?? row.answer ?? "",
+    }));
+  }, [data]);
 
   const onPressback = () => {
     navigation.goBack();
@@ -178,41 +197,46 @@ const DiseaseInfoScreen = () => {
       </TouchableOpacity>
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* <View
-          style={styles.inforcardContainer}
-          showsVerticalScrollIndicator={false}>
-          <View style={styles.inforcardinnerContainer}>
-            <Text style={styles.inforcardText}>Description</Text>
-            <TouchableOpacity onPress={() => setShowInfo(!showInfo)}>
-              <Icon
-                name={showInfo ? 'up' : 'down'}
-                size={16}
-                color={COLORS.textgrey}
-              />
-            </TouchableOpacity>
-          </View>
-
-          {showInfo ? (
-            <View style={styles.inforcardTextArea}>
-              <HTML 
-           source={data.catData}
-                stylesheet={html}
-              />
-            
-            </View>
-          ) : null}
-
-
-        </View> */}
+        {/* {data.shortDescription ? (
+          <Text style={styles.summaryText}>{data.shortDescription}</Text>
+        ) : null} */}
 
         <FlatList
           scrollEnabled={false}
-          data={data.acf[`questions_&_answers`]}
+          data={sectionRows}
+          keyExtractor={(item, index) =>
+            `${item.header ?? "section"}-${index}`
+          }
           renderItem={({ item }) => (
-            <InfoCard desc={item.answer} property={item.question} />
+            <InfoCard
+              desc={item.htmlContent}
+              property={item.header}
+              onImagePress={setViewingImage}
+            />
           )}
         />
       </ScrollView>
+
+      <ImageViewing
+        images={viewingImage ? [{ uri: viewingImage }] : []}
+        imageIndex={0}
+        visible={!!viewingImage}
+        onRequestClose={() => setViewingImage(null)}
+        swipeToCloseEnabled={true}
+        doubleTapToZoomEnabled={true}
+        presentationStyle="overFullScreen"
+        HeaderComponent={() => (
+          <View style={styles.imageViewerHeader}>
+            <TouchableOpacity
+              onPress={() => setViewingImage(null)}
+              style={styles.imageViewerCloseButton}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Icon name="close" size={26} color={COLORS.white} />
+            </TouchableOpacity>
+          </View>
+        )}
+      />
     </View>
   );
 };
@@ -237,6 +261,13 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: COLORS.textgrey,
     marginLeft: 5,
+  },
+  summaryText: {
+    fontSize: 14,
+    color: COLORS.textgrey,
+    lineHeight: 22,
+    marginBottom: 12,
+    marginTop: 4,
   },
   inforcardContainer: {
     width: "100%",
@@ -273,16 +304,40 @@ const styles = StyleSheet.create({
   },
   inforcardTextArea: {
     width: "90%",
-    height: "auto",
-    // justifyContent: 'center',
-    // alignItems: 'flex-start',
     alignSelf: "center",
-    // backgroundColor: 'green'
-    //  flexWrap: 'wrap'
+    marginBottom: 8,
   },
   infordescText: {
     fontSize: 14,
     fontWeight: "500",
     color: COLORS.textgrey,
+  },
+  webViewContainer: {
+    width: "100%",
+    borderRadius: 8,
+    overflow: "hidden",
+    backgroundColor: COLORS.white,
+  },
+  webView: {
+    width: "100%",
+    backgroundColor: "transparent",
+  },
+  imageViewerHeader: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    paddingTop: Platform.OS === "ios" ? 54 : 18,
+    paddingHorizontal: 12,
+    zIndex: 2,
+    alignItems: "flex-end",
+  },
+  imageViewerCloseButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

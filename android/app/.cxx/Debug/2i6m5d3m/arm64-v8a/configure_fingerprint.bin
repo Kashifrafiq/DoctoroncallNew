@@ -2,6 +2,7 @@ C/C++ Structured Log™
 –
 “/Users/kashif/Desktop/doctoroncall/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/CMakeLists.txtC
 A
+<<<<<<< Updated upstream
 ?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	óýŸ£—3Å ö´—¹ú2Œ
 ‰
 †/Users/kashif/Desktop/doctoroncall/node_modules/react-native-gesture-handler/android/build/generated/source/codegen/jni/CMakeLists.txt	óýŸ£—3 ´º—¹ú2‡
@@ -40,3 +41,45 @@ p/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/Debug/2i6m5d3m/
 Æ/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-reanimated/android/build/intermediates/prefab_package_configuration/debug/prefabDebugConfigurePackage/prefab_publication.json	ôýŸ£—3ˆ
 …
 ‚/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native/ReactAndroid/cmake-utils/default-app-setup/CMakeLists.txt	ôýŸ£—3ð Ú¥ï•—3
+=======
+?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	ÇÈÒõÔ3Õ> ¿öÃõÔ3v
+t
+r/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/Debug/2i6m5d3m/arm64-v8a/android_gradle_build.json	ÇÈÒõÔ3ú. ÀöÃõÔ3{
+y
+w/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/Debug/2i6m5d3m/arm64-v8a/android_gradle_build_mini.json	ÇÈÒõÔ3ö* ÏöÃõÔ3h
+f
+d/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/Debug/2i6m5d3m/arm64-v8a/build.ninja	ÇÈÒõÔ3Ï §öÃõÔ3l
+j
+h/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/Debug/2i6m5d3m/arm64-v8a/build.ninja.txt	ÇÈÒõÔ3q
+o
+m/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/Debug/2i6m5d3m/arm64-v8a/build_file_index.txt	ÇÈÒõÔ3Ò ÏöÃõÔ3r
+p
+n/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/Debug/2i6m5d3m/arm64-v8a/compile_commands.json	ÇÈÒõÔ3š‰	 ¦öÃõÔ3v
+t
+r/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/Debug/2i6m5d3m/arm64-v8a/compile_commands.json.bin	ÇÈÒõÔ3	Èå ¦öÃõÔ3|
+z
+x/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/Debug/2i6m5d3m/arm64-v8a/metadata_generation_command.txt	ÇÈÒõÔ3
+¿ ÏöÃõÔ3o
+m
+k/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/Debug/2i6m5d3m/arm64-v8a/prefab_config.json	ÇÈÒõÔ3Ò ÏöÃõÔ3t
+r
+p/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/Debug/2i6m5d3m/arm64-v8a/symbol_folder_index.txt	ÇÈÒõÔ3o ÏöÃõÔ3¥
+¢
+Ÿ/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/CMakeLists.txt	ÇÈÒõÔ3Å ì½÷ÀÔ3˜
+•
+’/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-gesture-handler/android/build/generated/source/codegen/jni/CMakeLists.txt	ÇÈÒõÔ3 ”À÷ÀÔ3“
+
+/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-reanimated/android/build/generated/source/codegen/jni/CMakeLists.txt	ÇÈÒõÔ3¹ ðÄ÷ÀÔ3Ì
+É
+Æ/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-reanimated/android/build/intermediates/prefab_package_configuration/debug/prefabDebugConfigurePackage/prefab_publication.json	ÇÈÒõÔ3ƒ
+€
+~/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-safe-area-context/android/src/main/jni/CMakeLists.txt	ÇÈÒõÔ3à ‘Àþ§Ô3x
+v
+t/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-screens/android/src/main/jni/CMakeLists.txt	ÇÈÒõÔ3Ÿ •Éþ§Ô3•
+’
+/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-vector-icons/android/build/generated/source/codegen/jni/CMakeLists.txt	ÇÈÒõÔ3× óË÷ÀÔ3
+
+Š/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-webview/android/build/generated/source/codegen/jni/CMakeLists.txt	ÇÈÒõÔ3Å ’Î÷ÀÔ3ˆ
+…
+‚/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native/ReactAndroid/cmake-utils/default-app-setup/CMakeLists.txt	ÇÈÒõÔ3ð ÛÄŒ¨Ô3
+>>>>>>> Stashed changes

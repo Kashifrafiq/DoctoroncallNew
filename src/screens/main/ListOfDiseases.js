@@ -6,8 +6,8 @@ import Header from '../../components/header/Header';
 import DiseaseHeader from '../../components/header/DiseaseHeader';
 import NameCard from '../../components/card/NameCard';
 import {useRoute} from '@react-navigation/native';
-import {getdiseases} from '../../Hooks/api/diseases';
-import {getDrugs} from '../../Hooks/api/drugs';
+import {getdiseases, getDiseasesByCategoryId} from '../../Hooks/api/diseases';
+import {getDrugs, getMedicinesByCategoryId} from '../../Hooks/api/drugs';
 import {getData} from '../../services/localStorage';
 import {COLORS} from '../../assets/color/COLOR';
 
@@ -43,11 +43,27 @@ const ListOfDiseases = () => {
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
+
+      const isDrugTab =
+        catData.type === 'drugs' || catData.type === 'drug';
+      const fromCategoryList = !catData.fvrtScreen && !catData.rcntScreen;
+
+      if (fromCategoryList) {
+        const categoryId = catData.diseaseId;
+        if (isDrugTab) {
+          const rows = await getMedicinesByCategoryId(categoryId);
+          setData(rows);
+        } else {
+          const rows = await getDiseasesByCategoryId(categoryId);
+          setData(rows);
+        }
+        return;
+      }
+
       let allData;
-      
-      if (catData.type === 'drugs' || catData.type === 'drug') {
+      if (isDrugTab) {
         allData = await getDrugs();
-        const filteredData = await filterData(allData, 'drug' );
+        const filteredData = await filterData(allData, 'drug');
         setData(filteredData);
       } else {
         allData = await getdiseases();
@@ -71,7 +87,10 @@ const ListOfDiseases = () => {
       name={item.title.rendered} 
       acf={item.acf} 
       catData={catData} 
-      id={item.id} 
+      id={item.id}
+      sections={item.sections}
+      shortDescription={item.shortDescription}
+      htmlContent={item.htmlContent}
     />
   ), [catData]);
 

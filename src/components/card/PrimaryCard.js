@@ -71,7 +71,7 @@ const PrimaryCard = ({
   return (
     <TouchableOpacity
       onPress={onPressCard}
-      style={[styles.mainContainer, { backgroundColor: `#${bgColor}` }]}
+      style={[styles.mainContainer, { backgroundColor: bgColor }]}
     >
       {paid ? (
         <View style={styles.lockContainer}>

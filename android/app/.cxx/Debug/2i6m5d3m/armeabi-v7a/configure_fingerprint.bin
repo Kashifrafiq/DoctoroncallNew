@@ -2,6 +2,7 @@ C/C++ Structured Log™
 –
 “/Users/kashif/Desktop/doctoroncall/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/CMakeLists.txtC
 A
+<<<<<<< Updated upstream
 ?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	‰–©£—3Å ö´—¹ú2Œ
 ‰
 †/Users/kashif/Desktop/doctoroncall/node_modules/react-native-gesture-handler/android/build/generated/source/codegen/jni/CMakeLists.txt	Š–©£—3 ´º—¹ú2‡
@@ -40,3 +41,45 @@ r/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/Debug/2i6m5d3m/
 Æ/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-reanimated/android/build/intermediates/prefab_package_configuration/debug/prefabDebugConfigurePackage/prefab_publication.json	Š–©£—3ˆ
 …
 ‚/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native/ReactAndroid/cmake-utils/default-app-setup/CMakeLists.txt	Š–©£—3ð Ú¥ï•—3
+=======
+?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	ŸÊÒõÔ3›? ÀÍÇõÔ3x
+v
+t/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/Debug/2i6m5d3m/armeabi-v7a/android_gradle_build.json	ŸÊÒõÔ3ª/ ÁÍÇõÔ3}
+{
+y/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/Debug/2i6m5d3m/armeabi-v7a/android_gradle_build_mini.json	ŸÊÒõÔ3¦+ ÔÍÇõÔ3j
+h
+f/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/Debug/2i6m5d3m/armeabi-v7a/build.ninja	ŸÊÒõÔ3øÛ ©ÍÇõÔ3n
+l
+j/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/Debug/2i6m5d3m/armeabi-v7a/build.ninja.txt	ŸÊÒõÔ3s
+q
+o/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/Debug/2i6m5d3m/armeabi-v7a/build_file_index.txt	ŸÊÒõÔ3Ò ÕÍÇõÔ3t
+r
+p/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/Debug/2i6m5d3m/armeabi-v7a/compile_commands.json	ŸÊÒõÔ3‰–	 ¨ÍÇõÔ3x
+v
+t/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/Debug/2i6m5d3m/armeabi-v7a/compile_commands.json.bin	ŸÊÒõÔ3	©æ ¨ÍÇõÔ3~
+|
+z/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/Debug/2i6m5d3m/armeabi-v7a/metadata_generation_command.txt	ŸÊÒõÔ3
+Ë ÔÍÇõÔ3q
+o
+m/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/Debug/2i6m5d3m/armeabi-v7a/prefab_config.json	ŸÊÒõÔ3Ò ÔÍÇõÔ3v
+t
+r/Users/kashif/Documents/GitHub/DoctoroncallNew/android/app/.cxx/Debug/2i6m5d3m/armeabi-v7a/symbol_folder_index.txt	ŸÊÒõÔ3q ÔÍÇõÔ3¥
+¢
+Ÿ/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/CMakeLists.txt	ŸÊÒõÔ3Å ì½÷ÀÔ3˜
+•
+’/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-gesture-handler/android/build/generated/source/codegen/jni/CMakeLists.txt	ŸÊÒõÔ3 ”À÷ÀÔ3“
+
+/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-reanimated/android/build/generated/source/codegen/jni/CMakeLists.txt	ŸÊÒõÔ3¹ ðÄ÷ÀÔ3Ì
+É
+Æ/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-reanimated/android/build/intermediates/prefab_package_configuration/debug/prefabDebugConfigurePackage/prefab_publication.json	ŸÊÒõÔ3ƒ
+€
+~/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-safe-area-context/android/src/main/jni/CMakeLists.txt	ŸÊÒõÔ3à ‘Àþ§Ô3x
+v
+t/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-screens/android/src/main/jni/CMakeLists.txt	ŸÊÒõÔ3Ÿ •Éþ§Ô3•
+’
+/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-vector-icons/android/build/generated/source/codegen/jni/CMakeLists.txt	ŸÊÒõÔ3× óË÷ÀÔ3
+
+Š/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-webview/android/build/generated/source/codegen/jni/CMakeLists.txt	ŸÊÒõÔ3Å ’Î÷ÀÔ3ˆ
+…
+‚/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native/ReactAndroid/cmake-utils/default-app-setup/CMakeLists.txt	ŸÊÒõÔ3ð ÛÄŒ¨Ô3
+>>>>>>> Stashed changes
