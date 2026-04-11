@@ -26,6 +26,10 @@ import com.learnium.RNDeviceInfo.RNDeviceInfo;
 import com.swmansion.gesturehandler.RNGestureHandlerPackage;
 // react-native-linear-gradient
 import com.BV.LinearGradient.LinearGradientPackage;
+// react-native-purchases
+import com.revenuecat.purchases.react.RNPurchasesPackage;
+// react-native-purchases-ui
+import com.revenuecat.purchases.react.ui.RevenueCatUIPackage;
 // react-native-reanimated
 import com.swmansion.reanimated.ReanimatedPackage;
 // react-native-safe-area-context
@@ -89,6 +93,8 @@ public class PackageList {
       new RNDeviceInfo(),
       new RNGestureHandlerPackage(),
       new LinearGradientPackage(),
+      new RNPurchasesPackage(),
+      new RevenueCatUIPackage(),
       new ReanimatedPackage(),
       new SafeAreaContextPackage(),
       new RNScreensPackage(),

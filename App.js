@@ -1,7 +1,7 @@
 
 import 'react-native-gesture-handler';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import {
   SafeAreaView,
@@ -24,13 +24,33 @@ import MainNavigation from './src/Navigation/MainNavigation';
 import Test from './src/screens/Test';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import auth from "@react-native-firebase/auth";
+import RevenueCatService from "./src/services/RevenueCatService";
 
 
 
 
 
 function App(){
-  
+  useEffect(() => {
+    const init = async () => {
+      const userId = auth().currentUser?.uid || null;
+      await RevenueCatService.initialize(userId);
+    };
+
+    init();
+
+    const unsubscribe = auth().onAuthStateChanged(async (user) => {
+      if (!RevenueCatService.isInitialized) return;
+      if (user?.uid) {
+        await RevenueCatService.logIn(user.uid);
+      } else {
+        await RevenueCatService.logOut();
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   return (
     <SafeAreaView style={styles.mainContainer} >

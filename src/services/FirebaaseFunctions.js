@@ -318,7 +318,8 @@ export const checkAndUpdateVerificationStatus = async (uid) => {
     // Check if expiry date is today or has passed
     if (expiryDate <= today) {
       // Update verification status to unverified
-      await updateUserData(uid, "verified", false);
+      // NOTE: existing schema uses `virified` across app screens.
+      await updateUserData(uid, "virified", false);
       console.log(
         `User ${uid} verification status updated to unverified due to expired date`
       );

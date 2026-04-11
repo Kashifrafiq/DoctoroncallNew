@@ -17,6 +17,7 @@ import ProfileScreen from "../screens/main/ProfileScreen";
 import UserDetailScreen from "../screens/main/UserDetailScreen";
 import SplashScreen from "../screens/auth/SplashScreen";
 import DisclaimerScreen from "../screens/auth/DisclaimerScreen";
+import PaywallScreen from "../screens/paywall/PaywallScreen";
 
 const Stack = createStackNavigator();
 
@@ -93,6 +94,11 @@ const MainNavigation = () => {
             <Stack.Screen
               name="loginScreen"
               component={LoginScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="PaywallScreen"
+              component={PaywallScreen}
               options={{ headerShown: false }}
             />
           </Stack.Group>

@@ -1,5 +1,4 @@
 import {
-  KeyboardAvoidingView,
   StyleSheet,
   Text,
   View,
@@ -12,9 +11,7 @@ import {
 import React, { useState } from "react";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { COLORS } from "../../assets/color/COLOR";
-import { checkCode } from "../../Hooks/api/code";
 import {
-  updateUserData,
   isProfileComplete,
   updateUserVerification,
   checkCodeStatus,
@@ -72,6 +69,37 @@ const PaymentSheet = ({ rbSheetRef, setrefresh }) => {
     });
   };
 
+  const onPressSubscribe = async () => {
+    const isProfileComplete = await checkUserProfile();
+    if (!isProfileComplete) return;
+    rbSheetRef.current.close();
+    navigation.navigate("PaywallScreen");
+  };
+
+  const onPressRestore = async () => {
+    const isProfileComplete = await checkUserProfile();
+    if (!isProfileComplete) return;
+
+    setIsLoading(true);
+    try {
+      const result = await RevenueCatService.restorePurchases();
+      if (result.success && result.hasEntitlement) {
+        await RevenueCatService.syncVerificationFromCustomerInfo(
+          result.customerInfo
+        );
+        setrefresh((prev) => !prev);
+        rbSheetRef.current.close();
+        Alert.alert("Restored", "Your subscription has been restored.");
+      } else {
+        Alert.alert("No Active Purchase", "No active subscription found.");
+      }
+    } catch (error) {
+      Alert.alert("Restore Error", "Could not restore purchases.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const onPressVerify = async () => {
     const isProfileComplete = await checkUserProfile();
     if (!isProfileComplete) return;
@@ -92,8 +120,8 @@ const PaymentSheet = ({ rbSheetRef, setrefresh }) => {
         // Calculate dates
         const today = new Date();
         const expiryDate = new Date();
-        expiryDate.setMonth(expiryDate.getMonth() + 4);
-        // 4 months from now
+        expiryDate.setMonth(expiryDate.getMonth() + 3);
+        // 3 months from now
 
         await updateUserVerification(
           auth().currentUser.uid,
@@ -105,7 +133,7 @@ const PaymentSheet = ({ rbSheetRef, setrefresh }) => {
         rbSheetRef.current.close();
         Alert.alert(
           "Success",
-          "Your account has been verified successfully for 4 months!"
+          "Your account has been verified successfully for 3 months!"
         );
       }
     } catch (error) {
@@ -145,28 +173,48 @@ const PaymentSheet = ({ rbSheetRef, setrefresh }) => {
         </View>
 
         <Text style={styles.paraText}>
-          Unlock all categories and diseases with premium access. Get exclusive
-          updates and features. Pay now or use your code for free. App linked to
-          your email.
+          Unlock all categories and diseases with premium access. If you have a
+          valid code, enter it to get free access for 3 months. Otherwise, you
+          can subscribe using in-app purchase. App linked to your email.
         </Text>
 
         <View style={styles.contactContainer}>
           <View style={styles.contactRight}>
             <Text style={styles.contactMainText}>Upgrade to Premium</Text>
             <Text style={styles.contactNormText}>
-              Unlock a vast knowledge base for endless access.
+              Buy in-app subscription or restore your purchase.
             </Text>
           </View>
           <View style={styles.contactLeft}>
             <TouchableOpacity
               style={[styles.contactButton, isLoading && styles.buttonDisabled]}
-              onPress={onPressContactUs}
+              onPress={onPressSubscribe}
               disabled={isLoading}
             >
-              <Text style={styles.contactButtonText}>Contact Us</Text>
+              <Text style={styles.contactButtonText}>Subscribe</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.restoreButton,
+                isLoading && styles.buttonDisabled,
+              ]}
+              onPress={onPressRestore}
+              disabled={isLoading}
+            >
+              <Text style={styles.restoreButtonText}>Restore</Text>
             </TouchableOpacity>
           </View>
         </View>
+
+        <TouchableOpacity
+          onPress={onPressContactUs}
+          style={styles.contactUsFallback}
+          disabled={isLoading}
+        >
+          <Text style={styles.contactUsFallbackText}>
+            Need help? Contact us on WhatsApp
+          </Text>
+        </TouchableOpacity>
 
         <View style={styles.codeSection}>
           <Text style={styles.haveCodeText}>Have a code?</Text>
@@ -277,6 +325,31 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: COLORS.white,
     textAlign: "center",
+  },
+  restoreButton: {
+    marginTop: 8,
+    borderColor: COLORS.primary,
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    minWidth: 100,
+    backgroundColor: COLORS.white,
+  },
+  restoreButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: COLORS.primary,
+    textAlign: "center",
+  },
+  contactUsFallback: {
+    marginTop: -12,
+    marginBottom: 20,
+    alignSelf: "flex-start",
+  },
+  contactUsFallbackText: {
+    color: COLORS.textgrey,
+    textDecorationLine: "underline",
   },
   codeSection: {
     width: "100%",

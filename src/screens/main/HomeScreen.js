@@ -24,13 +24,26 @@ import {
   getUserData,
   isProfileComplete,
 } from "../../services/FirebaaseFunctions";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import BottomSheet, {
   BottomSheetModal,
   BottomSheetModalProvider,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import { calculateDaysLeft } from "../../services/helper";
+
+const isSubscriptionActive = (user) => {
+  if (!user?.virified) return false;
+  if (!user?.expiryDate) return false;
+
+  const expiry =
+    typeof user.expiryDate?.toDate === "function"
+      ? user.expiryDate.toDate()
+      : new Date(user.expiryDate);
+
+  if (Number.isNaN(expiry?.getTime?.())) return false;
+  return expiry.getTime() > Date.now();
+};
 
 const HomeScreen = () => {
   const refRBSheet = useRef();
@@ -93,6 +106,8 @@ const HomeScreen = () => {
     console.log("userData =>", userData);
     setUser(userData);
   };
+
+  const hasActiveAccess = isSubscriptionActive(user);
 
   const getDiseaseCategory = (diseaseId, type) => {
     // Find the disease with the given ID
@@ -165,6 +180,12 @@ const HomeScreen = () => {
     userData();
   }, [refresh]);
 
+  useFocusEffect(
+    React.useCallback(() => {
+      userData();
+    }, [])
+  );
+
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -195,17 +216,17 @@ const HomeScreen = () => {
         <TextInput
           style={[
             styles.inputText,
-            !user?.virified && styles.disabledInputText, // Add a style for the disabled state
+            !hasActiveAccess && styles.disabledInputText, // Disable search for expired/unverified users
           ]}
           placeholder={
-            user?.virified
+            hasActiveAccess
               ? "Search by any disease or drug"
               : "Search is locked for unverified users"
           }
           placeholderTextColor={COLORS.darkGrey}
           value={searchQuery}
           onChangeText={(text) => setSearchQuery(text)}
-          editable={user?.virified || false}
+          editable={hasActiveAccess}
         />
       </View>
 
@@ -340,12 +361,12 @@ const HomeScreen = () => {
             mainText={item.name}
             secondaryText={item.diseaseCount}
             img={item.imageUrl}
-            paid={false}
+            paid={!hasActiveAccess && index !== 0}
             bgColor={item.color}
             id={item.id}
             type={activeTab}
             rbSheetRef={refRBSheet}
-            verified={user?.virified}
+            verified={hasActiveAccess}
           />
         )}
       />

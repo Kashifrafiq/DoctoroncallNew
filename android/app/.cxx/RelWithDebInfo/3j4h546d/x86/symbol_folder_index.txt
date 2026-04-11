@@ -1,1 +1,0 @@
-/Users/kashif/Desktop/doctoroncall/android/app/build/intermediates/cxx/RelWithDebInfo/3j4h546d/obj/x86
