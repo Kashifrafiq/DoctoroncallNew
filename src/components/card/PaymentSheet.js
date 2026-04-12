@@ -174,7 +174,7 @@ const PaymentSheet = ({ rbSheetRef, setrefresh }) => {
 
         <Text style={styles.paraText}>
           Unlock all categories and diseases with premium access. If you have a
-          valid code, enter it to get free access for 3 months. Otherwise, you
+          Valid scratch code present on inner side of front cover of Doctor OnCall Book 4 Month Otherwise, you
           can subscribe using in-app purchase. App linked to your email.
         </Text>
 
