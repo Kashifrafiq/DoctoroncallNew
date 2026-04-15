@@ -9,6 +9,20 @@ const COL_MEDICINES = "medicines";
 
 const LEGACY_CACHE_PREFIX = "drugs_chunk_";
 
+const getCollectionSnapshot = async (collectionName) => {
+  const collectionRef = firestore().collection(collectionName);
+  try {
+    // Always prefer fresh server data so admin/database updates show immediately.
+    return await collectionRef.get({ source: "server" });
+  } catch (error) {
+    console.warn(
+      `Server fetch failed for ${collectionName}, falling back to cache/default source`,
+      error
+    );
+    return await collectionRef.get();
+  }
+};
+
 const fetchDocsByCategoryId = async (collectionName, categoryId) => {
   if (categoryId === undefined || categoryId === null || categoryId === "") {
     return [];
@@ -83,7 +97,7 @@ const mapMedicineDoc = (doc) => {
 
 export const getdrugsCatogery = async () => {
   try {
-    const snap = await firestore().collection(COL_MEDICINE_CATEGORIES).get();
+    const snap = await getCollectionSnapshot(COL_MEDICINE_CATEGORIES);
     return snap.docs.map(mapCategoryDoc);
   } catch (error) {
     console.error("Error fetching medicine categories from Firestore:", error);
@@ -94,7 +108,7 @@ export const getdrugsCatogery = async () => {
 /** Full medicines collection (e.g. Home search merge, favorites that need all rows). */
 export const getDrugs = async () => {
   try {
-    const snap = await firestore().collection(COL_MEDICINES).get();
+    const snap = await getCollectionSnapshot(COL_MEDICINES);
     return snap.docs.map(mapMedicineDoc);
   } catch (error) {
     console.error("Error fetching medicines from Firestore:", error);

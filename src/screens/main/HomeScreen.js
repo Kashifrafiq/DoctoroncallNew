@@ -89,6 +89,7 @@ const HomeScreen = () => {
   const handleGetdrugs = async () => {
     try {
       const data = await getdrugsCatogery();
+      console.log('Drugs:', data);
       setdrug_Data(data);
     } catch (error) {
       console.error("Error getting diseases:", error);
@@ -359,7 +360,7 @@ const HomeScreen = () => {
         renderItem={({ item, index }) => (
           <PrimaryCard
             mainText={item.name}
-            secondaryText={item.diseaseCount}
+            secondaryText={item.type === 'diseases' ? item.diseaseCount : item.medicineCount}
             img={item.imageUrl}
             paid={!hasActiveAccess && index !== 0}
             bgColor={item.color}

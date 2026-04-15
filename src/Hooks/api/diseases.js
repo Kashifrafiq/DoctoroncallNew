@@ -9,6 +9,20 @@ const COL_DISEASES = "diseases";
 
 const LEGACY_CACHE_PREFIX = "diseases_chunk_";
 
+const getCollectionSnapshot = async (collectionName) => {
+  const collectionRef = firestore().collection(collectionName);
+  try {
+    // Always prefer fresh server data so admin/database updates show immediately.
+    return await collectionRef.get({ source: "server" });
+  } catch (error) {
+    console.warn(
+      `Server fetch failed for ${collectionName}, falling back to cache/default source`,
+      error
+    );
+    return await collectionRef.get();
+  }
+};
+
 /**
  * Query by categoryId; retries with number/string if the first query is empty
  * (Firestore matches types strictly).
@@ -94,7 +108,7 @@ const mapDiseaseDoc = (doc) => {
 
 export const getDiseasesCatogery = async () => {
   try {
-    const snap = await firestore().collection(COL_DISEASE_CATEGORIES).get();
+    const snap = await getCollectionSnapshot(COL_DISEASE_CATEGORIES);
     return snap.docs.map(mapCategoryDoc);
   } catch (error) {
     console.error("Error fetching disease categories from Firestore:", error);
@@ -104,7 +118,7 @@ export const getDiseasesCatogery = async () => {
 
 export const getdiseases = async () => {
   try {
-    const snap = await firestore().collection(COL_DISEASES).get();
+    const snap = await getCollectionSnapshot(COL_DISEASES);
     return snap.docs.map(mapDiseaseDoc);
   } catch (error) {
     console.error("Error fetching diseases from Firestore:", error);
