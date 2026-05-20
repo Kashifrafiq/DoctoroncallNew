@@ -16,9 +16,13 @@ import Icons from "react-native-vector-icons/Entypo";
 import Icons1 from "react-native-vector-icons/MaterialCommunityIcons";
 import Banner from "../../components/banner/Banner";
 import PrimaryCard from "../../components/card/PrimaryCard";
-import { getdiseases, getDiseasesCatogery } from "../../Hooks/api/diseases";
+import {
+  getDiseasesCatogery,
+  searchDiseases,
+} from "../../Hooks/api/diseases";
 import auth from "@react-native-firebase/auth";
-import { getDrugs, getdrugsCatogery } from "../../Hooks/api/drugs";
+import { getdrugsCatogery, searchMedicines } from "../../Hooks/api/drugs";
+import { MIN_SEARCH_LENGTH } from "../../Hooks/api/firestoreSearch";
 import PaymentSheet from "../../components/card/PaymentSheet";
 import {
   getUserData,
@@ -52,49 +56,12 @@ const HomeScreen = () => {
   const [dISEASE_DATA, setDISEASE_DATA] = useState([]);
   const [drug_DATA, setdrug_Data] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
   const [user, setUser] = useState();
-  const [combinedData, setCombinedData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const snapPoints = useMemo(() => ["25%", "50%"], []);
   const [refresh, setRefresh] = useState(false);
-
-  const fetchData = async () => {
-    try {
-      setIsLoading(true);
-      const [diseases, drugs] = await Promise.all([getdiseases(), getDrugs()]);
-      const mergedData = [...diseases, ...drugs];
-      setCombinedData(mergedData);
-      // console.log('Merged Data:', mergedData);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setIsLoading(false);
-      console.log("Done!!!");
-    }
-  };
-
-  const handleGetDiseases = async () => {
-    try {
-      setIsLoading(true);
-      const data = await getDiseasesCatogery();
-      setDISEASE_DATA(data);
-      console.log('Diseases:', data);  
-    } catch (error) {
-      console.error("Error getting diseases:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleGetdrugs = async () => {
-    try {
-      const data = await getdrugsCatogery();
-      console.log('Drugs:', data);
-      setdrug_Data(data);
-    } catch (error) {
-      console.error("Error getting diseases:", error);
-    }
-  };
 
   const userData = async () => {
     const isComplete = await isProfileComplete(auth().currentUser.uid);
@@ -104,33 +71,11 @@ const HomeScreen = () => {
     }
 
     const userData = await getUserData(auth().currentUser.uid);
-    console.log("userData =>", userData);
+    // console.log("userData =>", userData);
     setUser(userData);
   };
 
   const hasActiveAccess = isSubscriptionActive(user);
-
-  const getDiseaseCategory = (diseaseId, type) => {
-    // Find the disease with the given ID
-
-    const disease = dISEASE_DATA.find((d) => d.id === diseaseId);
-
-    if (!disease) {
-      return `Disease with ID ${diseaseId} not found.`;
-    }
-
-    // Extract the category IDs from the disease
-    const categoryIds = disease["disease-category"];
-
-    // Find the categories that match these IDs
-    const matchingCategories = categories.filter((category) =>
-      categoryIds.includes(category.id)
-    );
-
-    return matchingCategories.length > 0
-      ? matchingCategories
-      : `No categories found for disease with ID ${diseaseId}.`;
-  };
 
   const getCategoryById = (categoryId, type) => {
     if (type === "disease") {
@@ -142,44 +87,58 @@ const HomeScreen = () => {
   };
   // return dISEASE_DATA.find(category => category.id === categoryId[0]);
 
-  const filterData = () => {
-    if (searchQuery === "") {
-      return combinedData;
-    }
-    return combinedData.filter(
-      (item) => item?.slug?.toLowerCase().includes(searchQuery.toLowerCase()) // Adjust based on your data structure
-    );
-  };
-
-  const filteredData = (
-    activeTab === "diseases" ? dISEASE_DATA : drug_DATA
-  ).filter((item) =>
-    item?.name?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const handlePress = async (item) => {
-    try {
-      const category = await getDiseaseCategory(item.id);
-      navigate.navigate("diseaseInfoScreen", {
-        acf: item.acf,
-        name: item.title.rendered,
-        id: item.id,
-        sections: item.sections,
-        shortDescription: item.shortDescription,
-        htmlContent: item.htmlContent,
-        category: category, // Pass the category to the next screen
-      });
-    } catch (error) {
-      console.error("Error fetching disease category:", error);
-    }
-  };
+  const categoryListData =
+    activeTab === "diseases" ? dISEASE_DATA : drug_DATA;
 
   useEffect(() => {
-    handleGetDiseases();
-    handleGetdrugs();
-    fetchData();
-    userData();
+    const loadHome = async () => {
+      setIsLoading(true);
+      try {
+        const [diseaseCategories, drugCategories] = await Promise.all([
+          getDiseasesCatogery(),
+          getdrugsCatogery(),
+          userData(),
+        ]);
+        console.log('diseaseCategories', diseaseCategories);
+        console.log('drugCategories', drugCategories);
+        setDISEASE_DATA(diseaseCategories);
+        setdrug_Data(drugCategories);
+      } catch (error) {
+        console.error("Error loading home data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadHome();
   }, [refresh]);
+
+  useEffect(() => {
+    const term = searchQuery.trim();
+    if (term.length < MIN_SEARCH_LENGTH) {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    const timer = setTimeout(async () => {
+      try {
+        const [diseases, medicines] = await Promise.all([
+          searchDiseases(term),
+          searchMedicines(term),
+        ]);
+        
+        setSearchResults([...diseases, ...medicines]);
+      } catch (error) {
+        console.error("Search failed:", error);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 350);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -224,18 +183,37 @@ const HomeScreen = () => {
               ? "Search by any disease or drug"
               : "Search is locked for unverified users"
           }
-          placeholderTextColor={COLORS.darkGrey}
+          placeholderTextColor={COLORS.black}
           value={searchQuery}
           onChangeText={(text) => setSearchQuery(text)}
           editable={hasActiveAccess}
         />
       </View>
 
-      {searchQuery !== "" && (
+      {searchQuery.trim().length >= MIN_SEARCH_LENGTH && (
         <View style={styles.searchResultsContainer}>
+          {isSearching ? (
+            <View style={styles.searchLoadingRow}>
+              <ActivityIndicator
+                size="small"
+                color={COLORS.HomeinnerTabBarPrimCol}
+              />
+              <Text style={styles.searchLoadingText}>Searching…</Text>
+            </View>
+          ) : null}
           <FlatList
-            data={filterData()}
-            keyExtractor={(item) => item.id} // Ensure each item has a unique ID
+            data={searchResults}
+            keyExtractor={(item) => `${item.type ?? "item"}-${item.id}`}
+            style={styles.searchResultsList}
+            contentContainerStyle={styles.searchResultsContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={true}
+            nestedScrollEnabled={true}
+            ListEmptyComponent={
+              !isSearching ? (
+                <Text style={styles.searchEmptyText}>No results found</Text>
+              ) : null
+            }
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={styles.resultItem}
@@ -246,6 +224,13 @@ const HomeScreen = () => {
                       : item[`drug_category`],
                     item.type
                   );
+                  if (!cat) {
+                    Alert.alert(
+                      "Unavailable",
+                      "Category for this item could not be loaded."
+                    );
+                    return;
+                  }
                   navigate.navigate("diseaseInfoScreen", {
                     acf: item.acf,
                     name: item.title.rendered,
@@ -354,13 +339,13 @@ const HomeScreen = () => {
       <FlatList
         showsVerticalScrollIndicator={false}
         // data={activeTab === 'diseases' ? dISEASE_DATA : drug_DATA}
-        data={filteredData}
+        data={categoryListData}
         numColumns={2}
         style={styles.flatListContainer}
         renderItem={({ item, index }) => (
           <PrimaryCard
             mainText={item.name}
-            secondaryText={item.type === 'diseases' ? item.diseaseCount : item.medicineCount}
+            secondaryText={activeTab === 'diseases' ? item.count : item.count}
             img={item.imageUrl}
             paid={!hasActiveAccess && index !== 0}
             bgColor={item.color}
@@ -451,7 +436,7 @@ const styles = StyleSheet.create({
   },
   inputText: {
     flex: 1,
-    color: COLORS.darkGrey,
+    color: COLORS.black,
     fontSize: 16,
     marginLeft: 12,
   },
@@ -503,6 +488,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "500",
   },
+  searchLoadingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    gap: 8,
+  },
+  searchLoadingText: {
+    fontSize: 14,
+    color: COLORS.textgrey,
+  },
+  searchEmptyText: {
+    padding: 16,
+    fontSize: 14,
+    color: COLORS.textgrey,
+    textAlign: "center",
+  },
   searchResultsContainer: {
     position: "absolute",
     width: "100%",
@@ -512,6 +513,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderRadius: 12,
     marginHorizontal: 20,
+    maxHeight: 320,
+    overflow: "hidden",
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -520,6 +523,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+  },
+  searchResultsList: {
+    flexGrow: 0,
+  },
+  searchResultsContent: {
+    paddingBottom: 8,
   },
   flatListContainer: {
     width: "100%",

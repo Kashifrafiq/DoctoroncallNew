@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="gcm_defaultSenderId" translatable="false">859404488134</string>
+    <string name="google_api_key" translatable="false">AIzaSyCeCjI56kgC28ctdFv7c4Ufl3yu3ymwGvs</string>
+    <string name="google_app_id" translatable="false">1:859404488134:android:d75541e8ecf9e1448236c7</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyCeCjI56kgC28ctdFv7c4Ufl3yu3ymwGvs</string>
+    <string name="google_storage_bucket" translatable="false">doctoroncall-a158a.firebasestorage.app</string>
+    <string name="project_id" translatable="false">doctoroncall-a158a</string>
+</resources>

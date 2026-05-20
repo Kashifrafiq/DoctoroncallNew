@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import firestore from "@react-native-firebase/firestore";
 import { buildContentSectionsForUi } from "../../services/contentSectionMapper";
+import { searchByNamePrefix } from "./firestoreSearch";
 
 /** @see Firestore collection — disease category tiles (Home) */
 const COL_DISEASE_CATEGORIES = "diseaseCategories";
@@ -94,6 +95,7 @@ const mapDiseaseDoc = (doc) => {
 
   return {
     id,
+    name: titleText,
     slug: d.slug ?? String(id),
     title: { rendered: titleText },
     sections,
@@ -138,6 +140,10 @@ export const getDiseasesByCategoryId = async (categoryId) => {
     return [];
   }
 };
+
+/** Server-side search — only reads matching documents (not the full collection). */
+export const searchDiseases = async (query) =>
+  searchByNamePrefix(COL_DISEASES, mapDiseaseDoc, query);
 
 export const clearDiseasesCache = async () => {
   try {

@@ -107,6 +107,7 @@ const RecentScreem = () => {
       );
 
       const mergedData = [...filteredDiseases, ...filteredDrugs];
+      console.log('mergedData', mergedData);
       setFilteredData(mergedData);
     } catch (error) {
       console.error('Error filtering data:', error);
@@ -221,9 +222,9 @@ const RecentScreem = () => {
               <PrimaryCard
                 mainText={item.name}
                 secondaryText={item.count}
-                img={item.acf.category_image}
+                img={item.imageUrl}
                 paid={false}
-                bgColor={item.acf.color}
+                bgColor={item.color}
                 id={item.id}
                 type={item.taxonomy ? extractTextFromTaxonomy(item.taxonomy) : ''}
                 fvrtScreen={false}

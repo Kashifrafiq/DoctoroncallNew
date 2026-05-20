@@ -107,6 +107,18 @@ query(collection('diseases'), orderBy('id'), limit(PAGE_SIZE))
 
 ---
 
+## Home search (server-side prefix queries)
+
+Home search uses `searchDiseases` / `searchMedicines` in `src/Hooks/api/firestoreSearch.js` — **not** a full collection download.
+
+- Queries use **prefix range** on `nameLower` (preferred) or `name`, capped at **25 reads per collection**.
+- Optional `searchKeywords: string[]` on each doc (lowercase tokens) helps match words that are not at the start of the title.
+- **Backend:** when publishing, set `nameLower: name.trim().toLowerCase()` and optionally `searchKeywords: ['acute', 'headache', ...]` split from the title.
+
+Firestore may prompt you to create an index the first time you run `array-contains` on `searchKeywords`; prefix queries on a single field usually need no composite index.
+
+---
+
 ## Implementation checklist (this repo)
 
 - [ ] Add `appConfig/content` (or equivalent) with **version** fields maintained when admins publish.
