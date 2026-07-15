@@ -1,6 +1,6 @@
 {
   "name": "React-RuntimeHermes",
-  "version": "0.79.1",
+  "version": "0.85.3",
   "summary": "The React Native Runtime.",
   "homepage": "https://reactnative.dev/",
   "license": "MIT",
@@ -10,23 +10,20 @@
   },
   "source": {
     "git": "https://github.com/facebook/react-native.git",
-    "tag": "v0.79.1"
+    "tag": "v0.85.3"
   },
-  "source_files": "hermes/*.{cpp,h}",
+  "source_files": "hermes/*.h",
   "header_dir": "react/runtime/hermes",
   "pod_target_xcconfig": {
-    "HEADER_SEARCH_PATHS": "\"${PODS_TARGET_SRCROOT}/../..\" \"${PODS_TARGET_SRCROOT}/../../hermes/executor\" \"$(PODS_ROOT)/boost\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-jsinspector/jsinspector_modern.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-jsinspectortracing/jsinspector_moderntracing.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-jsitooling/JSITooling.framework/Headers\"",
+    "HEADER_SEARCH_PATHS": "\"${PODS_TARGET_SRCROOT}/../..\" \"${PODS_TARGET_SRCROOT}/../../hermes/executor\" \"${PODS_ROOT}/React-jsinspector\" \"${PODS_ROOT}/React-jsinspectorcdp\" \"${PODS_ROOT}/React-jsinspectortracing\" \"${PODS_ROOT}/React-runtimeexecutor\" \"${PODS_ROOT}/React-runtimeexecutor/platform/ios\" \"${PODS_ROOT}/React-jsitooling\"",
     "USE_HEADERMAP": "YES",
     "CLANG_CXX_LANGUAGE_STANDARD": "c++20",
-    "GCC_WARN_PEDANTIC": "YES"
+    "GCC_WARN_PEDANTIC": "YES",
+    "OTHER_CFLAGS": "$(inherited) -ivfsoverlay $(PODS_ROOT)/React-Core-prebuilt/React-VFS.yaml",
+    "OTHER_CPLUSPLUSFLAGS": "$(inherited) -ivfsoverlay $(PODS_ROOT)/React-Core-prebuilt/React-VFS.yaml",
+    "OTHER_SWIFT_FLAGS": "$(inherited) -Xcc -ivfsoverlay -Xcc $(PODS_ROOT)/React-Core-prebuilt/React-VFS.yaml"
   },
-  "compiler_flags": "-DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1 -DFOLLY_CFG_NO_COROUTINES=1 -DFOLLY_HAVE_CLOCK_GETTIME=1 -Wno-comma -Wno-shorten-64-to-32 -Wno-documentation",
-  "header_mappings_dir": "../../",
-  "module_name": "React_RuntimeHermes",
   "dependencies": {
-    "RCT-Folly/Fabric": [
-      "2024.11.18.00"
-    ],
     "React-jsitracing": [
 
     ],
@@ -45,6 +42,9 @@
     "React-jsinspector": [
 
     ],
+    "React-jsinspectorcdp": [
+
+    ],
     "React-jsinspectortracing": [
 
     ],
@@ -54,7 +54,16 @@
     "hermes-engine": [
 
     ],
+    "React-runtimeexecutor": [
+
+    ],
     "React-jsitooling": [
+
+    ],
+    "ReactNativeDependencies": [
+
+    ],
+    "React-Core-prebuilt": [
 
     ]
   }

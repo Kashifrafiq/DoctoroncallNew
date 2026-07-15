@@ -15,9 +15,9 @@
 #include <react/renderer/components/safeareacontext/ComponentDescriptors.h>
 #include <rnscreens.h>
 #include <react/renderer/components/rnscreens/ComponentDescriptors.h>
-#include <RNVectorIconsSpec.h>
 #include <RNCWebViewSpec.h>
 #include <react/renderer/components/RNCWebViewSpec/ComponentDescriptors.h>
+#include <rnworklets.h>
 
 namespace facebook {
 namespace react {
@@ -43,13 +43,13 @@ auto module_rnscreens = rnscreens_ModuleProvider(moduleName, params);
 if (module_rnscreens != nullptr) {
 return module_rnscreens;
 }
-auto module_RNVectorIconsSpec = RNVectorIconsSpec_ModuleProvider(moduleName, params);
-if (module_RNVectorIconsSpec != nullptr) {
-return module_RNVectorIconsSpec;
-}
 auto module_RNCWebViewSpec = RNCWebViewSpec_ModuleProvider(moduleName, params);
 if (module_RNCWebViewSpec != nullptr) {
 return module_RNCWebViewSpec;
+}
+auto module_rnworklets = rnworklets_ModuleProvider(moduleName, params);
+if (module_rnworklets != nullptr) {
+return module_rnworklets;
 }
   return nullptr;
 }
@@ -75,6 +75,11 @@ providerRegistry->add(concreteComponentDescriptorProvider<RNSScreenComponentDesc
 providerRegistry->add(concreteComponentDescriptorProvider<RNSScreenFooterComponentDescriptor>());
 providerRegistry->add(concreteComponentDescriptorProvider<RNSScreenContentWrapperComponentDescriptor>());
 providerRegistry->add(concreteComponentDescriptorProvider<RNSModalScreenComponentDescriptor>());
+providerRegistry->add(concreteComponentDescriptorProvider<RNSTabsHostComponentDescriptor>());
+providerRegistry->add(concreteComponentDescriptorProvider<RNSSafeAreaViewComponentDescriptor>());
+providerRegistry->add(concreteComponentDescriptorProvider<RNSStackScreenComponentDescriptor>());
+providerRegistry->add(concreteComponentDescriptorProvider<RNSStackHeaderConfigComponentDescriptor>());
+providerRegistry->add(concreteComponentDescriptorProvider<RNSStackHeaderSubviewComponentDescriptor>());
 providerRegistry->add(concreteComponentDescriptorProvider<RNCWebViewComponentDescriptor>());
   return;
 }

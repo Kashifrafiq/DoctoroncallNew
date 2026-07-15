@@ -1,6 +1,6 @@
 {
   "name": "RNScreens",
-  "version": "4.10.0",
+  "version": "4.25.2",
   "summary": "Native navigation primitives for your React Native app.",
   "description": "RNScreens - first incomplete navigation solution for your React Native app",
   "homepage": "https://github.com/software-mansion/react-native-screens",
@@ -10,25 +10,30 @@
   },
   "platforms": {
     "ios": "15.1",
-    "tvos": "11.0",
+    "tvos": "15.1",
     "visionos": "1.0"
   },
   "source": {
     "git": "https://github.com/software-mansion/react-native-screens.git",
-    "tag": "4.10.0"
+    "tag": "4.25.2"
   },
-  "source_files": "ios/**/*.{h,m,mm,cpp}",
-  "project_header_files": "cpp/**/*.h",
+  "source_files": [
+    "ios/**/*.{h,m,mm,cpp,swift}"
+  ],
+  "project_header_files": "ios/bridging/Swift-Bridging.h",
   "requires_arc": true,
-  "compiler_flags": "-DRCT_NEW_ARCH_ENABLED=1 -DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1 -DFOLLY_CFG_NO_COROUTINES=1 -DFOLLY_HAVE_CLOCK_GETTIME=1 -Wno-comma -Wno-shorten-64-to-32",
+  "exclude_files": "ios/stubs/**/*.{h,m,mm,cpp,swift}",
+  "pod_target_xcconfig": {
+    "OTHER_CPLUSPLUSFLAGS": "$(inherited) -DRNS_GAMMA_ENABLED=1 -DRCT_NEW_ARCH_ENABLED=1  -ivfsoverlay $(PODS_ROOT)/React-Core-prebuilt/React-VFS.yaml",
+    "OTHER_SWIFT_FLAGS": "$(inherited)  -DRCT_NEW_ARCH_ENABLED -Xcc -ivfsoverlay -Xcc $(PODS_ROOT)/React-Core-prebuilt/React-VFS.yaml",
+    "DEFINES_MODULE": "YES",
+    "HEADER_SEARCH_PATHS": "\"$(PODS_ROOT)/Headers/Private/Yoga\"",
+    "CLANG_CXX_LANGUAGE_STANDARD": "c++20",
+    "OTHER_CFLAGS": "$(inherited) -ivfsoverlay $(PODS_ROOT)/React-Core-prebuilt/React-VFS.yaml"
+  },
+  "compiler_flags": "-DRCT_NEW_ARCH_ENABLED=1",
   "dependencies": {
     "React-Core": [
-
-    ],
-    "RCT-Folly": [
-      "2024.11.18.00"
-    ],
-    "glog": [
 
     ],
     "React-RCTFabric": [
@@ -76,9 +81,6 @@
     "React-rendererdebug": [
 
     ],
-    "DoubleConversion": [
-
-    ],
     "React-jsi": [
 
     ],
@@ -88,18 +90,15 @@
     "hermes-engine": [
 
     ],
-    "React-hermes": [
+    "ReactNativeDependencies": [
+
+    ],
+    "React-Core-prebuilt": [
 
     ],
     "React-RCTImage": [
 
     ]
-  },
-  "pod_target_xcconfig": {
-    "HEADER_SEARCH_PATHS": "\"$(PODS_ROOT)/boost\" \"$(PODS_ROOT)/Headers/Private/Yoga\" \"$(PODS_ROOT)/DoubleConversion\" \"$(PODS_ROOT)/fast_float/include\" \"$(PODS_ROOT)/fmt/include\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers/react/renderer/graphics/platform/ios\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers/react/renderer/components/view/platform/cxx\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-FabricImage/React_FabricImage.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers/react/nativemodule/core\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-NativeModulesApple/React_NativeModulesApple.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-RCTFabric/RCTFabric.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-utils/React_utils.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-featureflags/React_featureflags.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-debug/React_debug.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-ImageManager/React_ImageManager.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-rendererdebug/React_rendererdebug.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-renderercss/React_renderercss.framework/Headers\"",
-    "CLANG_CXX_LANGUAGE_STANDARD": "c++20",
-    "OTHER_CPLUSPLUSFLAGS": "$(inherited) -DRCT_NEW_ARCH_ENABLED=1 -DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1 -DFOLLY_CFG_NO_COROUTINES=1 -DFOLLY_HAVE_CLOCK_GETTIME=1 -Wno-comma -Wno-shorten-64-to-32",
-    "OTHER_SWIFT_FLAGS": "$(inherited) -DRCT_NEW_ARCH_ENABLED"
   },
   "subspecs": [
     {
@@ -107,6 +106,10 @@
       "source_files": [
         "common/cpp/**/*.{cpp,h}",
         "cpp/**/*.{cpp,h}"
+      ],
+      "project_header_files": [
+        "common/cpp/**/*.h",
+        "cpp/**/*.h"
       ],
       "header_dir": "rnscreens",
       "pod_target_xcconfig": {
