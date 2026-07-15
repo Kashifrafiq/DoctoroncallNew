@@ -6,36 +6,26 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 # or link against a old prefab target (this is needed for React Native 0.76 on).
 set(REACTNATIVE_MERGED_SO true)
 
-add_subdirectory("/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/" rnasyncstorage_autolinked_build)
+add_subdirectory("/Users/kashif/Desktop/doctoroncall/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/" rnasyncstorage_autolinked_build)
 
+add_subdirectory("/Users/kashif/Desktop/doctoroncall/node_modules/react-native-gesture-handler/android/build/generated/source/codegen/jni/" rngesturehandler_codegen_autolinked_build)
 
+add_subdirectory("/Users/kashif/Desktop/doctoroncall/node_modules/react-native-reanimated/android/build/generated/source/codegen/jni/" rnreanimated_autolinked_build)
+add_subdirectory("/Users/kashif/Desktop/doctoroncall/node_modules/react-native-safe-area-context/android/src/main/jni/" safeareacontext_autolinked_build)
+add_subdirectory("/Users/kashif/Desktop/doctoroncall/node_modules/react-native-screens/android/src/main/jni/" rnscreens_autolinked_build)
+add_subdirectory("/Users/kashif/Desktop/doctoroncall/node_modules/react-native-webview/android/build/generated/source/codegen/jni/" RNCWebViewSpec_autolinked_build)
+add_subdirectory("/Users/kashif/Desktop/doctoroncall/node_modules/react-native-worklets/android/build/generated/source/codegen/jni/" rnworklets_autolinked_build)
 
-
-
-add_subdirectory("/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-gesture-handler/android/build/generated/source/codegen/jni/" rngesturehandler_codegen_autolinked_build)
-
-
-
-add_subdirectory("/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-reanimated/android/build/generated/source/codegen/jni/" rnreanimated_autolinked_build)
-add_subdirectory("/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-safe-area-context/android/src/main/jni/" safeareacontext_autolinked_build)
-add_subdirectory("/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-screens/android/src/main/jni/" rnscreens_autolinked_build)
-add_subdirectory("/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-vector-icons/android/build/generated/source/codegen/jni/" RNVectorIconsSpec_autolinked_build)
-add_subdirectory("/Users/kashif/Documents/GitHub/DoctoroncallNew/node_modules/react-native-webview/android/build/generated/source/codegen/jni/" RNCWebViewSpec_autolinked_build)
 
 set(AUTOLINKED_LIBRARIES
   react_codegen_rnasyncstorage
   
-  
-  
-  
-  
   react_codegen_rngesturehandler_codegen
-  
-  
   
   react_codegen_rnreanimated
   react_codegen_safeareacontext
   react_codegen_rnscreens
-  react_codegen_RNVectorIconsSpec
   react_codegen_RNCWebViewSpec
+  react_codegen_rnworklets
+  
 )

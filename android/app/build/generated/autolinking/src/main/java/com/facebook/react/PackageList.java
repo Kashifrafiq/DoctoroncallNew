@@ -10,37 +10,7 @@ import com.facebook.react.shell.MainReactPackage;
 import java.util.Arrays;
 import java.util.ArrayList;
 
-// @react-native-async-storage/async-storage
-import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;
-// @react-native-firebase/app
-import io.invertase.firebase.app.ReactNativeFirebaseAppPackage;
-// @react-native-firebase/auth
-import io.invertase.firebase.auth.ReactNativeFirebaseAuthPackage;
-// @react-native-firebase/firestore
-import io.invertase.firebase.firestore.ReactNativeFirebaseFirestorePackage;
-// @react-native-masked-view/masked-view
-import org.reactnative.maskedview.RNCMaskedViewPackage;
-// react-native-device-info
-import com.learnium.RNDeviceInfo.RNDeviceInfo;
-// react-native-gesture-handler
-import com.swmansion.gesturehandler.RNGestureHandlerPackage;
-// react-native-linear-gradient
-import com.BV.LinearGradient.LinearGradientPackage;
-// react-native-purchases
-import com.revenuecat.purchases.react.RNPurchasesPackage;
-// react-native-purchases-ui
-import com.revenuecat.purchases.react.ui.RevenueCatUIPackage;
-// react-native-reanimated
-import com.swmansion.reanimated.ReanimatedPackage;
-// react-native-safe-area-context
-import com.th3rdwave.safeareacontext.SafeAreaContextPackage;
-// react-native-screens
-import com.swmansion.rnscreens.RNScreensPackage;
-// react-native-vector-icons
-import com.oblador.vectoricons.VectorIconsPackage;
-// react-native-webview
-import com.reactnativecommunity.webview.RNCWebViewPackage;
-
+@SuppressWarnings("deprecation")
 public class PackageList {
   private Application application;
   private ReactNativeHost reactNativeHost;
@@ -85,21 +55,26 @@ public class PackageList {
   public ArrayList<ReactPackage> getPackages() {
     return new ArrayList<>(Arrays.<ReactPackage>asList(
       new MainReactPackage(mConfig),
-      new AsyncStoragePackage(),
-      new ReactNativeFirebaseAppPackage(),
-      new ReactNativeFirebaseAuthPackage(),
-      new ReactNativeFirebaseFirestorePackage(),
-      new RNCMaskedViewPackage(),
-      new RNDeviceInfo(),
-      new RNGestureHandlerPackage(),
-      new LinearGradientPackage(),
-      new RNPurchasesPackage(),
-      new RevenueCatUIPackage(),
-      new ReanimatedPackage(),
-      new SafeAreaContextPackage(),
-      new RNScreensPackage(),
-      new VectorIconsPackage(),
-      new RNCWebViewPackage()
+      // @react-native-async-storage/async-storage
+      new com.reactnativecommunity.asyncstorage.AsyncStoragePackage(),
+      // expo
+      new expo.modules.ExpoModulesPackage(),
+      // react-native-gesture-handler
+      new com.swmansion.gesturehandler.RNGestureHandlerPackage(),
+      // react-native-purchases
+      new com.revenuecat.purchases.react.RNPurchasesPackage(),
+      // react-native-reanimated
+      new com.swmansion.reanimated.ReanimatedPackage(),
+      // react-native-safe-area-context
+      new com.th3rdwave.safeareacontext.SafeAreaContextPackage(),
+      // react-native-screens
+      new com.swmansion.rnscreens.RNScreensPackage(),
+      // react-native-webview
+      new com.reactnativecommunity.webview.RNCWebViewPackage(),
+      // react-native-worklets
+      new com.swmansion.worklets.WorkletsPackage(),
+      // @react-native-masked-view/masked-view
+      new org.reactnative.maskedview.RNCMaskedViewPackage()
     ));
   }
 }

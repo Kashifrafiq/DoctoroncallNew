@@ -1,6 +1,6 @@
 {
   "name": "React-defaultsnativemodule",
-  "version": "0.79.1",
+  "version": "0.85.3",
   "summary": "React Native Default native modules",
   "homepage": "https://reactnative.dev/",
   "license": "MIT",
@@ -10,21 +10,20 @@
   },
   "source": {
     "git": "https://github.com/facebook/react-native.git",
-    "tag": "v0.79.1"
+    "tag": "v0.85.3"
   },
-  "compiler_flags": "-DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1 -DFOLLY_CFG_NO_COROUTINES=1 -DFOLLY_HAVE_CLOCK_GETTIME=1 -Wno-comma -Wno-shorten-64-to-32",
-  "source_files": "*.{cpp,h}",
+  "source_files": "*.h",
   "header_dir": "react/nativemodule/defaults",
   "pod_target_xcconfig": {
     "CLANG_CXX_LANGUAGE_STANDARD": "c++20",
-    "HEADER_SEARCH_PATHS": "\"$(PODS_ROOT)/RCT-Folly\" \"$(PODS_TARGET_SRCROOT)/../../..\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-RCTFBReactNativeSpec/React_RCTFBReactNativeSpec.framework/Headers\"",
-    "OTHER_CFLAGS": "$(inherited) -DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1 -DFOLLY_CFG_NO_COROUTINES=1 -DFOLLY_HAVE_CLOCK_GETTIME=1 -Wno-comma -Wno-shorten-64-to-32",
-    "DEFINES_MODULE": "YES"
+    "HEADER_SEARCH_PATHS": "\"$(PODS_ROOT)/Headers/Private/Yoga\" \"${PODS_ROOT}/React-RCTFBReactNativeSpec\" \"${PODS_ROOT}/React-featureflags\" \"${PODS_ROOT}/React-featureflagsnativemodule\"",
+    "OTHER_CFLAGS": "$(inherited) -ivfsoverlay $(PODS_ROOT)/React-Core-prebuilt/React-VFS.yaml",
+    "DEFINES_MODULE": "YES",
+    "OTHER_CPLUSPLUSFLAGS": "$(inherited) -ivfsoverlay $(PODS_ROOT)/React-Core-prebuilt/React-VFS.yaml",
+    "OTHER_SWIFT_FLAGS": "$(inherited) -Xcc -ivfsoverlay -Xcc $(PODS_ROOT)/React-Core-prebuilt/React-VFS.yaml"
   },
-  "module_name": "React_defaultsnativemodule",
-  "header_mappings_dir": "../..",
   "dependencies": {
-    "RCT-Folly": [
+    "Yoga": [
 
     ],
     "React-jsi": [
@@ -36,13 +35,13 @@
     "hermes-engine": [
 
     ],
-    "React-hermes": [
+    "ReactNativeDependencies": [
+
+    ],
+    "React-Core-prebuilt": [
 
     ],
     "React-domnativemodule": [
-
-    ],
-    "React-featureflagsnativemodule": [
 
     ],
     "React-microtasksnativemodule": [
@@ -51,7 +50,25 @@
     "React-idlecallbacksnativemodule": [
 
     ],
+    "React-intersectionobservernativemodule": [
+
+    ],
+    "React-mutationobservernativemodule": [
+
+    ],
+    "React-webperformancenativemodule": [
+
+    ],
+    "React-Fabric/animated": [
+
+    ],
     "React-RCTFBReactNativeSpec": [
+
+    ],
+    "React-featureflags": [
+
+    ],
+    "React-featureflagsnativemodule": [
 
     ]
   }
