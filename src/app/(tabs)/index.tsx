@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -47,7 +48,7 @@ function isSubscriptionActive(user?: UserData): boolean {
   return expiry.getTime() > Date.now();
 }
 
-const TAB_BAR_CLEARANCE = 72;
+const TAB_BAR_CLEARANCE = Platform.OS === 'android' ? 96 : 72;
 
 export default function HomeScreen() {
   const sheetRef = useRef<BottomSheetModal>(null);
@@ -129,11 +130,8 @@ export default function HomeScreen() {
         const [diseaseCategories, drugCategories] = await Promise.all([
           getDiseasesCatogery(),
           getdrugsCatogery(),
-          loadUserData(),
         ]);
-
-        
-        console.log('drugCategories', drugCategories);
+        await loadUserData();
 
         setDiseaseData(diseaseCategories);
         setDrugData(drugCategories);
@@ -196,7 +194,7 @@ export default function HomeScreen() {
         sections: JSON.stringify(item.sections ?? null),
         catData: JSON.stringify({
           diseaseId: cat.id,
-          image: cat.acf?.category_image,
+          image: cat.imageUrl ?? cat.acf?.category_image ?? null,
           heading: cat.name,
           count: cat.count,
           type: item.type,
@@ -296,7 +294,7 @@ export default function HomeScreen() {
             placeholder={
               hasActiveAccess
                 ? 'Search by any disease or drug'
-                : 'Search is locked for unverified users'
+                : 'Search is locked for unsubscribed users'
             }
             placeholderTextColor={COLORS.black}
             value={searchQuery}

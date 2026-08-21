@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 24,
+    paddingBottom: Platform.OS === 'android' ? 120 : 24,
   },
   contentContainer: {
     width: '90%',

@@ -1,5 +1,7 @@
 import {
   collection,
+  doc,
+  getDoc,
   getDocs,
   getDocsFromServer,
   query,
@@ -42,6 +44,104 @@ export async function getCollectionSnapshot(
   }
 }
 
+/** Fetch a single doc by Firestore document id, then by `id` field. */
+export async function fetchDocById(
+  collectionName: string,
+  id: string | number,
+): Promise<QueryDocumentSnapshot<DocumentData, DocumentData> | null> {
+  if (id === undefined || id === null || id === '') {
+    return null;
+  }
+
+  const db = getFirestoreDb();
+  if (!db) {
+    return null;
+  }
+
+  const idString = String(id);
+  const col = collection(db, collectionName);
+
+  try {
+    const byDocId = await getDoc(doc(db, collectionName, idString));
+    if (byDocId.exists()) {
+      return byDocId as QueryDocumentSnapshot<DocumentData, DocumentData>;
+    }
+  } catch (error) {
+    console.warn(`getDoc failed for ${collectionName}/${idString}`, error);
+  }
+
+  for (const candidate of [idString, Number.isNaN(Number(idString)) ? null : Number(idString)]) {
+    if (candidate == null || candidate === '') {
+      continue;
+    }
+    try {
+      const snap = await getDocs(query(col, where('id', '==', candidate)));
+      if (!snap.empty) {
+        return snap.docs[0];
+      }
+    } catch (error) {
+      console.warn(`id-field query failed for ${collectionName}`, error);
+    }
+  }
+
+  return null;
+}
+
+/** Primary categoryId first, then categoryIds / legacy arrays (deduped). */
+export function resolveMembershipCategoryIds(
+  categoryId: unknown,
+  categoryIds: unknown,
+  legacyArray?: unknown,
+): (string | number)[] {
+  const result: (string | number)[] = [];
+  const seen = new Set<string>();
+
+  const push = (value: unknown) => {
+    if (value == null || value === '') {
+      return;
+    }
+    if (typeof value !== 'string' && typeof value !== 'number') {
+      return;
+    }
+    const key = String(value);
+    if (seen.has(key)) {
+      return;
+    }
+    seen.add(key);
+    result.push(value);
+  };
+
+  push(categoryId);
+  if (Array.isArray(categoryIds)) {
+    categoryIds.forEach(push);
+  }
+  if (Array.isArray(legacyArray)) {
+    legacyArray.forEach(push);
+  }
+
+  return result;
+}
+
+function categoryIdQueryVariants(categoryId: string | number): (string | number)[] {
+  const variants: (string | number)[] = [categoryId];
+
+  if (typeof categoryId === 'number') {
+    variants.push(String(categoryId));
+  } else if (
+    typeof categoryId === 'string' &&
+    categoryId.trim() !== '' &&
+    !Number.isNaN(Number(categoryId))
+  ) {
+    variants.push(Number(categoryId));
+  }
+
+  return variants;
+}
+
+/**
+ * Loads docs where this category is the primary `categoryId` OR appears in `categoryIds`.
+ * Results are deduped by document id.
+ */
 export async function fetchDocsByCategoryId(
   collectionName: string,
   categoryId: string | number,
@@ -56,28 +156,23 @@ export async function fetchDocsByCategoryId(
   }
 
   const col = collection(db, collectionName);
-  let snap = await getDocs(query(col, where('categoryId', '==', categoryId)));
-  if (!snap.empty) {
-    return snap.docs;
-  }
+  const byDocId = new Map<string, QueryDocumentSnapshot<DocumentData, DocumentData>>();
 
-  if (typeof categoryId === 'number') {
-    snap = await getDocs(query(col, where('categoryId', '==', String(categoryId))));
-    if (!snap.empty) {
-      return snap.docs;
+  for (const candidate of categoryIdQueryVariants(categoryId)) {
+    const [primarySnap, membershipSnap] = await Promise.all([
+      getDocs(query(col, where('categoryId', '==', candidate))),
+      getDocs(query(col, where('categoryIds', 'array-contains', candidate))),
+    ]);
+
+    for (const doc of primarySnap.docs) {
+      byDocId.set(doc.id, doc);
     }
-  } else if (
-    typeof categoryId === 'string' &&
-    categoryId.trim() !== '' &&
-    !Number.isNaN(Number(categoryId))
-  ) {
-    snap = await getDocs(query(col, where('categoryId', '==', Number(categoryId))));
-    if (!snap.empty) {
-      return snap.docs;
+    for (const doc of membershipSnap.docs) {
+      byDocId.set(doc.id, doc);
     }
   }
 
-  return [];
+  return Array.from(byDocId.values());
 }
 
 export function mapCategoryDoc(

@@ -2,12 +2,12 @@ import Entypo from '@expo/vector-icons/Entypo';
 import { useCallback, useEffect, useState } from 'react';
 import {
   FlatList,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { PrimaryCard } from '@/components/cards/primary-card';
 import { Header } from '@/components/headers/header';
@@ -117,7 +117,7 @@ export default function RecentScreen() {
   }, [isDataLoaded, filterData]);
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+    <View style={styles.container}>
       <Header />
 
       <View style={styles.contentContainer}>
@@ -163,7 +163,7 @@ export default function RecentScreen() {
           />
         )}
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   listContainer: {
-    paddingBottom: 100,
+    paddingBottom: Platform.OS === 'android' ? 120 : 100,
   },
   emptyContainer: {
     flex: 1,

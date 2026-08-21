@@ -17,7 +17,7 @@ export function calculateDaysLeft(expiryDate: ExpiryDate): string {
   const expiry = toDate(expiryDate);
 
   if (!expiry) {
-    return 'No expiry date available';
+    return 'Not Subscribed';
   }
 
   const currentDate = new Date();
@@ -25,7 +25,7 @@ export function calculateDaysLeft(expiryDate: ExpiryDate): string {
   const daysLeft = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
 
   if (daysLeft < 0) {
-    return 'Not Verified';
+    return 'Not Subscribed';
   }
 
   return `${daysLeft} days left`;

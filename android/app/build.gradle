@@ -92,8 +92,8 @@ android {
         applicationId 'com.doctorOnCall'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.2.0"
+        versionCode 31
+        versionName "1.1.9"
 
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
     }
@@ -104,15 +104,27 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            def storeFileProperty = findProperty('MYAPP_UPLOAD_STORE_FILE')
+            if (storeFileProperty) {
+                storeFile file(storeFileProperty)
+                storePassword findProperty('MYAPP_UPLOAD_STORE_PASSWORD')
+                keyAlias findProperty('MYAPP_UPLOAD_KEY_ALIAS')
+                keyPassword findProperty('MYAPP_UPLOAD_KEY_PASSWORD')
+            }
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            // Use upload keystore when configured; otherwise fall back to debug for local testing.
+            if (findProperty('MYAPP_UPLOAD_STORE_FILE')) {
+                signingConfig signingConfigs.release
+            } else {
+                signingConfig signingConfigs.debug
+            }
             def enableShrinkResources = findProperty('android.enableShrinkResourcesInReleaseBuilds') ?: 'false'
             shrinkResources enableShrinkResources.toBoolean()
             minifyEnabled enableMinifyInReleaseBuilds

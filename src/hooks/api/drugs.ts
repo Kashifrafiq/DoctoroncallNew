@@ -2,9 +2,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
 
 import {
+  fetchDocById,
   fetchDocsByCategoryId,
   getCollectionSnapshot,
   mapCategoryDoc,
+  resolveMembershipCategoryIds,
 } from '@/hooks/api/firestore-helpers';
 import { searchByNamePrefix } from '@/hooks/api/firestore-search';
 import type { CategoryItem, SearchResultItem } from '@/types/catalog';
@@ -26,12 +28,11 @@ function mapMedicineDoc(doc: QueryDocumentSnapshot<DocumentData, DocumentData>):
       : (data.title?.rendered ?? data.titleRendered ?? ''));
 
   const categoryId = data.categoryId;
-  const fromArray = data.drug_category ?? data.drugCategory;
-  const drugCategory = Array.isArray(fromArray)
-    ? fromArray
-    : categoryId != null
-      ? [categoryId]
-      : [];
+  const drugCategory = resolveMembershipCategoryIds(
+    categoryId,
+    data.categoryIds,
+    data.drug_category ?? data.drugCategory,
+  );
 
   const { sections, acf } = buildContentSectionsForUi(data);
 
@@ -45,6 +46,7 @@ function mapMedicineDoc(doc: QueryDocumentSnapshot<DocumentData, DocumentData>):
     htmlContent: data.htmlContent,
     acf,
     categoryId,
+    categoryIds: drugCategory,
     type: 'drug',
     drug_category: drugCategory,
   };
@@ -79,6 +81,16 @@ export async function getMedicinesByCategoryId(
   } catch (error) {
     console.error('Error fetching medicines by categoryId:', error);
     return [];
+  }
+}
+
+export async function getMedicineById(id: string | number): Promise<DiseaseListItem | null> {
+  try {
+    const docSnap = await fetchDocById(COL_MEDICINES, id);
+    return docSnap ? mapMedicineDoc(docSnap) : null;
+  } catch (error) {
+    console.error('Error fetching medicine by id:', error);
+    return null;
   }
 }
 
