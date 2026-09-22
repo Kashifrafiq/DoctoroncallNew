@@ -83,8 +83,8 @@ export default function HomeScreen() {
 
     let data = await getUserData(currentUser.uid);
 
-    // If Firestore still shows locked after a successful purchase, re-sync from RevenueCat.
-    if (!isSubscriptionActive(data ?? undefined)) {
+    // If Firestore still shows locked after a successful purchase, re-sync from RevenueCat (iOS only).
+    if (Platform.OS === 'ios' && !isSubscriptionActive(data ?? undefined)) {
       const synced = await RevenueCatService.ensurePremiumSynced();
       if (synced) {
         data = await getUserData(currentUser.uid);

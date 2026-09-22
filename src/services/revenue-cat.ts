@@ -14,6 +14,9 @@ const REVENUECAT_API_KEYS = {
   android: process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY ?? 'goog_jbFgWutkCpZZtravuSNgXsclBIe',
 };
 
+/** In-app subscriptions (RevenueCat / Play Billing) are iOS-only. Android uses WhatsApp + codes. */
+const SUPPORTS_IN_APP_SUBSCRIPTIONS = Platform.OS === 'ios';
+
 const ENTITLEMENT_ID = 'Premium';
 const OFFERING_ID = 'Premium';
 
@@ -87,6 +90,10 @@ class RevenueCatServiceClass {
   }
 
   async initialize(userId: string | null = null): Promise<boolean> {
+    if (!SUPPORTS_IN_APP_SUBSCRIPTIONS) {
+      return false;
+    }
+
     if (this.isInitialized) {
       if (userId) {
         await this.logIn(userId);
@@ -158,7 +165,7 @@ class RevenueCatServiceClass {
   }
 
   async getAvailablePlans(): Promise<SubscriptionPlan[]> {
-    if (!this.isInitialized) {
+    if (!SUPPORTS_IN_APP_SUBSCRIPTIONS || !this.isInitialized) {
       return [];
     }
 
@@ -239,6 +246,9 @@ class RevenueCatServiceClass {
   }
 
   async purchasePlan(plan: SubscriptionPlan | null): Promise<PurchaseResult> {
+    if (!SUPPORTS_IN_APP_SUBSCRIPTIONS) {
+      return { success: false, error: 'In-app subscriptions are not available on this platform' };
+    }
     if (!this.isInitialized) {
       return { success: false, error: 'RevenueCat is not initialized' };
     }
@@ -275,6 +285,9 @@ class RevenueCatServiceClass {
   }
 
   async restorePurchases(): Promise<PurchaseResult> {
+    if (!SUPPORTS_IN_APP_SUBSCRIPTIONS) {
+      return { success: false, error: 'In-app subscriptions are not available on this platform' };
+    }
     if (!this.isInitialized) {
       return { success: false, error: 'RevenueCat is not initialized' };
     }

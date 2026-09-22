@@ -40,7 +40,25 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "manifestQueries": {
+        "package": ["com.whatsapp", "com.whatsapp.w4b"],
+        "intent": [
+          {
+            "action": "android.intent.action.VIEW",
+            "data": {
+              "scheme": "https",
+              "host": "api.whatsapp.com"
+            }
+          },
+          {
+            "action": "android.intent.action.VIEW",
+            "data": {
+              "scheme": "whatsapp"
+            }
+          }
+        ]
+      }
     },
     "web": {
       "output": "static",

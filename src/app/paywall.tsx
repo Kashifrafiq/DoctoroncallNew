@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -232,8 +233,12 @@ export default function PaywallScreen() {
   };
 
   useEffect(() => {
+    if (Platform.OS !== 'ios') {
+      router.replace('/');
+      return;
+    }
     loadPackages();
-  }, []);
+  }, [router]);
 
   const selectedPrice = useMemo(() => {
     return getPlanProduct(selectedPlan)?.priceString || '';
@@ -307,7 +312,7 @@ export default function PaywallScreen() {
     }
   };
 
-  return (
+  return Platform.OS !== 'ios' ? null : (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>

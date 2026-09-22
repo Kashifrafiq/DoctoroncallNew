@@ -10,12 +10,8 @@ const WHATSAPP_URL =
 export function Banner() {
   const onPressContactUs = async () => {
     try {
-      const canOpen = await Linking.canOpenURL(WHATSAPP_URL);
-      if (canOpen) {
-        await Linking.openURL(WHATSAPP_URL);
-      } else {
-        Alert.alert('WhatsApp', 'Make sure WhatsApp is installed on your device');
-      }
+      // Don't gate on canOpenURL — Android 11+ can return false even when WhatsApp is installed.
+      await Linking.openURL(WHATSAPP_URL);
     } catch {
       Alert.alert('WhatsApp', 'Make sure WhatsApp is installed on your device');
     }

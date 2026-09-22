@@ -28,6 +28,9 @@ import { RevenueCatService } from '@/services/revenue-cat';
 const WHATSAPP_URL =
   'https://api.whatsapp.com/send?phone=+9203175193394&text=Hello.%20I%20have%20installed%20Doctor%20Oncall%20App.%20How%20I%20can%20get%20premium%20access%20to%20all%20drugs%20and%20diseases%20?%20';
 
+/** Google Play subscriptions are disabled; Android uses WhatsApp + scratch codes only. */
+const SUPPORTS_IN_APP_SUBSCRIPTIONS = Platform.OS === 'ios';
+
 type PaymentSheetProps = {
   sheetRef: RefObject<BottomSheetModal | null>;
   onRefresh: () => void;
@@ -88,12 +91,8 @@ export function PaymentSheet({ sheetRef, onRefresh }: PaymentSheetProps) {
     }
 
     try {
-      const canOpen = await Linking.canOpenURL(WHATSAPP_URL);
-      if (canOpen) {
-        await Linking.openURL(WHATSAPP_URL);
-      } else {
-        Alert.alert('Error', 'Make sure WhatsApp is installed on your device');
-      }
+      // Don't gate on canOpenURL — Android 11+ can return false even when WhatsApp is installed.
+      await Linking.openURL(WHATSAPP_URL);
     } catch {
       Alert.alert('Error', 'Make sure WhatsApp is installed on your device');
     }
@@ -203,33 +202,54 @@ export function PaymentSheet({ sheetRef, onRefresh }: PaymentSheetProps) {
         </View>
 
         <Text style={styles.paraText}>
-          Get unlimited access to all diseases and drugs. Choose a plan, or use a book scratch code
-          below.
+          {SUPPORTS_IN_APP_SUBSCRIPTIONS
+            ? 'Get unlimited access to all diseases and drugs. Choose a plan, or use a book scratch code below.'
+            : 'Get unlimited access to all diseases and drugs. Contact us on WhatsApp, or use a book scratch code below.'}
         </Text>
 
-        <View style={styles.subscribeCard}>
-          <View style={styles.subscribeBadge}>
-            <MaterialCommunityIcons name="crown" size={16} color={COLORS.white} />
-            <Text style={styles.subscribeBadgeText}>Recommended</Text>
+        {SUPPORTS_IN_APP_SUBSCRIPTIONS ? (
+          <View style={styles.subscribeCard}>
+            <View style={styles.subscribeBadge}>
+              <MaterialCommunityIcons name="crown" size={16} color={COLORS.white} />
+              <Text style={styles.subscribeBadgeText}>Recommended</Text>
+            </View>
+            <Text style={styles.subscribeTitle}>Subscription plans</Text>
+            <Text style={styles.subscribeSubtitle}>
+              See monthly and quarterly options, then unlock instantly.
+            </Text>
+            <Pressable
+              style={[styles.primaryButton, isLoading && styles.buttonDisabled]}
+              onPress={onPressSubscribe}
+              disabled={isLoading}>
+              <Text style={styles.primaryButtonText}>View Subscription Plans</Text>
+              <MaterialCommunityIcons name="arrow-right" size={22} color={COLORS.white} />
+            </Pressable>
+            <Pressable
+              style={[styles.restoreButton, isLoading && styles.buttonDisabled]}
+              onPress={onPressRestore}
+              disabled={isLoading}>
+              <Text style={styles.restoreButtonText}>Already subscribed? Restore purchase</Text>
+            </Pressable>
           </View>
-          <Text style={styles.subscribeTitle}>Subscription plans</Text>
-          <Text style={styles.subscribeSubtitle}>
-            See monthly and quarterly options, then unlock instantly.
-          </Text>
-          <Pressable
-            style={[styles.primaryButton, isLoading && styles.buttonDisabled]}
-            onPress={onPressSubscribe}
-            disabled={isLoading}>
-            <Text style={styles.primaryButtonText}>View Subscription Plans</Text>
-            <MaterialCommunityIcons name="arrow-right" size={22} color={COLORS.white} />
-          </Pressable>
-          <Pressable
-            style={[styles.restoreButton, isLoading && styles.buttonDisabled]}
-            onPress={onPressRestore}
-            disabled={isLoading}>
-            <Text style={styles.restoreButtonText}>Already subscribed? Restore purchase</Text>
-          </Pressable>
-        </View>
+        ) : (
+          <View style={styles.subscribeCard}>
+            <View style={styles.subscribeBadge}>
+              <MaterialCommunityIcons name="whatsapp" size={16} color={COLORS.white} />
+              <Text style={styles.subscribeBadgeText}>Recommended</Text>
+            </View>
+            <Text style={styles.subscribeTitle}>Get premium via WhatsApp</Text>
+            <Text style={styles.subscribeSubtitle}>
+              Message us to unlock full access to all diseases and drugs.
+            </Text>
+            <Pressable
+              style={[styles.primaryButton, isLoading && styles.buttonDisabled]}
+              onPress={onPressContactUs}
+              disabled={isLoading}>
+              <MaterialCommunityIcons name="whatsapp" size={22} color={COLORS.white} />
+              <Text style={styles.primaryButtonText}>Contact on WhatsApp</Text>
+            </Pressable>
+          </View>
+        )}
 
         <View style={styles.dividerRow}>
           <View style={styles.dividerLine} />
@@ -281,13 +301,15 @@ export function PaymentSheet({ sheetRef, onRefresh }: PaymentSheetProps) {
           ) : null}
         </View>
 
-        <Pressable
-          onPress={onPressContactUs}
-          style={styles.contactUsFallback}
-          disabled={isLoading}>
-          <MaterialCommunityIcons name="whatsapp" size={18} color={COLORS.textGrey} />
-          <Text style={styles.contactUsFallbackText}>Need help? Contact us on WhatsApp</Text>
-        </Pressable>
+        {SUPPORTS_IN_APP_SUBSCRIPTIONS ? (
+          <Pressable
+            onPress={onPressContactUs}
+            style={styles.contactUsFallback}
+            disabled={isLoading}>
+            <MaterialCommunityIcons name="whatsapp" size={18} color={COLORS.textGrey} />
+            <Text style={styles.contactUsFallbackText}>Need help? Contact us on WhatsApp</Text>
+          </Pressable>
+        ) : null}
       </View>
     </BottomSheetView>
   );
