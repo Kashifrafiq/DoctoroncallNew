@@ -1,6 +1,7 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { BottomSheetTextInput, BottomSheetView } from '@gorhom/bottom-sheet';
 import type { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { Image } from 'expo-image';
 import * as Linking from 'expo-linking';
 import { type Href, useRouter } from 'expo-router';
 import type { RefObject } from 'react';
@@ -12,8 +13,10 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { COLORS } from '@/constants/colors';
 import {
@@ -28,7 +31,9 @@ import { RevenueCatService } from '@/services/revenue-cat';
 const WHATSAPP_URL =
   'https://api.whatsapp.com/send?phone=+9203175193394&text=Hello.%20I%20have%20installed%20Doctor%20Oncall%20App.%20How%20I%20can%20get%20premium%20access%20to%20all%20drugs%20and%20diseases%20?%20';
 
-/** Google Play subscriptions are disabled; Android uses WhatsApp + scratch codes only. */
+const ANDROID_PROMO_IMAGE = require('@/assets/images/bottomSheet.jpeg');
+
+/** Google Play subscriptions are disabled; Android uses promo image + scratch codes. */
 const SUPPORTS_IN_APP_SUBSCRIPTIONS = Platform.OS === 'ios';
 
 type PaymentSheetProps = {
@@ -41,6 +46,10 @@ export function PaymentSheet({ sheetRef, onRefresh }: PaymentSheetProps) {
   const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const { height: windowHeight } = useWindowDimensions();
+  const promoImageMaxHeight = Math.round(windowHeight * 0.5);
+  const bottomPadding = Math.max(insets.bottom, 16) + (Platform.OS === 'android' ? 32 : 20);
 
   const closeSheet = () => {
     sheetRef.current?.dismiss();
@@ -179,7 +188,7 @@ export function PaymentSheet({ sheetRef, onRefresh }: PaymentSheetProps) {
   };
 
   return (
-    <BottomSheetView style={styles.container}>
+    <BottomSheetView style={[styles.container, { paddingBottom: bottomPadding }]}>
       {isLoading ? (
         <View style={styles.loadingOverlay}>
           <View style={styles.loadingContent}>
@@ -204,7 +213,7 @@ export function PaymentSheet({ sheetRef, onRefresh }: PaymentSheetProps) {
         <Text style={styles.paraText}>
           {SUPPORTS_IN_APP_SUBSCRIPTIONS
             ? 'Get unlimited access to all diseases and drugs. Choose a plan, or use a book scratch code below.'
-            : 'Get unlimited access to all diseases and drugs. Contact us on WhatsApp, or use a book scratch code below.'}
+            : 'Get unlimited access to all diseases and drugs. Use a book scratch code below.'}
         </Text>
 
         {SUPPORTS_IN_APP_SUBSCRIPTIONS ? (
@@ -232,30 +241,22 @@ export function PaymentSheet({ sheetRef, onRefresh }: PaymentSheetProps) {
             </Pressable>
           </View>
         ) : (
-          <View style={styles.subscribeCard}>
-            <View style={styles.subscribeBadge}>
-              <MaterialCommunityIcons name="whatsapp" size={16} color={COLORS.white} />
-              <Text style={styles.subscribeBadgeText}>Recommended</Text>
-            </View>
-            <Text style={styles.subscribeTitle}>Get premium via WhatsApp</Text>
-            <Text style={styles.subscribeSubtitle}>
-              Message us to unlock full access to all diseases and drugs.
-            </Text>
-            <Pressable
-              style={[styles.primaryButton, isLoading && styles.buttonDisabled]}
-              onPress={onPressContactUs}
-              disabled={isLoading}>
-              <MaterialCommunityIcons name="whatsapp" size={22} color={COLORS.white} />
-              <Text style={styles.primaryButtonText}>Contact on WhatsApp</Text>
-            </Pressable>
+          <View style={styles.promoImageCard}>
+            <Image
+              source={ANDROID_PROMO_IMAGE}
+              style={[styles.promoImage, { height: promoImageMaxHeight }]}
+              contentFit="contain"
+            />
           </View>
         )}
 
-        <View style={styles.dividerRow}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>or</Text>
-          <View style={styles.dividerLine} />
-        </View>
+        {SUPPORTS_IN_APP_SUBSCRIPTIONS ? (
+          <View style={styles.dividerRow}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>or</Text>
+            <View style={styles.dividerLine} />
+          </View>
+        ) : null}
 
         <View style={styles.codeSection}>
           <View style={styles.codeHeaderRow}>
@@ -301,15 +302,17 @@ export function PaymentSheet({ sheetRef, onRefresh }: PaymentSheetProps) {
           ) : null}
         </View>
 
-        {SUPPORTS_IN_APP_SUBSCRIPTIONS ? (
-          <Pressable
-            onPress={onPressContactUs}
-            style={styles.contactUsFallback}
-            disabled={isLoading}>
-            <MaterialCommunityIcons name="whatsapp" size={18} color={COLORS.textGrey} />
-            <Text style={styles.contactUsFallbackText}>Need help? Contact us on WhatsApp</Text>
-          </Pressable>
-        ) : null}
+        <Pressable
+          onPress={onPressContactUs}
+          style={styles.contactUsFallback}
+          disabled={isLoading}>
+          <MaterialCommunityIcons name="whatsapp" size={18} color={COLORS.textGrey} />
+          <Text style={styles.contactUsFallbackText}>
+            {SUPPORTS_IN_APP_SUBSCRIPTIONS
+              ? 'Need help? Contact us on WhatsApp'
+              : 'NEED HELP - CONTACT US'}
+          </Text>
+        </Pressable>
       </View>
     </BottomSheetView>
   );
@@ -320,7 +323,6 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 20,
     paddingTop: 8,
-    paddingBottom: 28,
   },
   header: {
     flexDirection: 'row',
@@ -348,6 +350,16 @@ const styles = StyleSheet.create({
     padding: 18,
     borderRadius: 14,
     marginBottom: 8,
+  },
+  promoImageCard: {
+    width: '100%',
+    borderRadius: 14,
+    overflow: 'hidden',
+    marginBottom: 8,
+    backgroundColor: COLORS.white,
+  },
+  promoImage: {
+    width: '100%',
   },
   subscribeBadge: {
     alignSelf: 'flex-start',
@@ -433,7 +445,6 @@ const styles = StyleSheet.create({
   contactUsFallbackText: {
     color: COLORS.textGrey,
     fontSize: 13,
-    textDecorationLine: 'underline',
   },
   codeSection: {
     width: '100%',
