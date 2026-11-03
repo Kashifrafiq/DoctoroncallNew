@@ -1,7 +1,6 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { BottomSheetTextInput, BottomSheetView } from '@gorhom/bottom-sheet';
 import type { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { Image } from 'expo-image';
 import * as Linking from 'expo-linking';
 import { type Href, useRouter } from 'expo-router';
 import type { RefObject } from 'react';
@@ -13,7 +12,6 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  useWindowDimensions,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -31,9 +29,7 @@ import { RevenueCatService } from '@/services/revenue-cat';
 const WHATSAPP_URL =
   'https://api.whatsapp.com/send?phone=+9203175193394&text=Hello.%20I%20have%20installed%20Doctor%20Oncall%20App.%20How%20I%20can%20get%20premium%20access%20to%20all%20drugs%20and%20diseases%20?%20';
 
-const ANDROID_PROMO_IMAGE = require('@/assets/images/bottomSheet.jpeg');
-
-/** Google Play subscriptions are disabled; Android uses promo image + scratch codes. */
+/** In-app subscriptions are iOS-only. Android only redeems free book codes (no external payments). */
 const SUPPORTS_IN_APP_SUBSCRIPTIONS = Platform.OS === 'ios';
 
 type PaymentSheetProps = {
@@ -47,8 +43,6 @@ export function PaymentSheet({ sheetRef, onRefresh }: PaymentSheetProps) {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { height: windowHeight } = useWindowDimensions();
-  const promoImageMaxHeight = Math.round(windowHeight * 0.5);
   const bottomPadding = Math.max(insets.bottom, 16) + (Platform.OS === 'android' ? 32 : 20);
 
   const closeSheet = () => {
@@ -59,7 +53,12 @@ export function PaymentSheet({ sheetRef, onRefresh }: PaymentSheetProps) {
     try {
       const userId = auth().currentUser?.uid;
       if (!userId) {
-        Alert.alert('Sign in required', 'Please sign in before making a payment.');
+        Alert.alert(
+          'Sign in required',
+          SUPPORTS_IN_APP_SUBSCRIPTIONS
+            ? 'Please sign in before making a payment.'
+            : 'Please sign in before redeeming your book code.',
+        );
         return false;
       }
 
@@ -67,7 +66,9 @@ export function PaymentSheet({ sheetRef, onRefresh }: PaymentSheetProps) {
       if (!complete) {
         Alert.alert(
           'Complete Profile Required',
-          'Please complete your profile details before making a payment.',
+          SUPPORTS_IN_APP_SUBSCRIPTIONS
+            ? 'Please complete your profile details before making a payment.'
+            : 'Please complete your profile details before redeeming your book code.',
           [
             {
               text: 'Cancel',
@@ -100,7 +101,6 @@ export function PaymentSheet({ sheetRef, onRefresh }: PaymentSheetProps) {
     }
 
     try {
-      // Don't gate on canOpenURL — Android 11+ can return false even when WhatsApp is installed.
       await Linking.openURL(WHATSAPP_URL);
     } catch {
       Alert.alert('Error', 'Make sure WhatsApp is installed on your device');
@@ -148,13 +148,13 @@ export function PaymentSheet({ sheetRef, onRefresh }: PaymentSheetProps) {
     }
 
     if (!code.trim()) {
-      Alert.alert('Error', 'Please enter a verification code');
+      Alert.alert('Error', 'Please enter your book code');
       return;
     }
 
     const userId = auth().currentUser?.uid;
     if (!userId) {
-      Alert.alert('Sign in required', 'Please sign in to verify your code.');
+      Alert.alert('Sign in required', 'Please sign in to redeem your book code.');
       return;
     }
 
@@ -176,12 +176,12 @@ export function PaymentSheet({ sheetRef, onRefresh }: PaymentSheetProps) {
         closeSheet();
         Alert.alert(
           'Success',
-          'Your account has been verified successfully. Enjoy 3 months of free premium access!',
+          'Your book code was redeemed. Enjoy 3 months of free access!',
         );
       }
     } catch (error) {
       console.error('Error verifying code:', error);
-      Alert.alert('Error', 'Failed to verify your account. Please try again.');
+      Alert.alert('Error', 'Failed to redeem your book code. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -200,7 +200,9 @@ export function PaymentSheet({ sheetRef, onRefresh }: PaymentSheetProps) {
 
       <View style={isLoading ? styles.contentBlurred : undefined}>
         <View style={styles.header}>
-          <Text style={styles.headerText}>Unlock Full Access</Text>
+          <Text style={styles.headerText}>
+            {SUPPORTS_IN_APP_SUBSCRIPTIONS ? 'Unlock Full Access' : 'Redeem Book Code'}
+          </Text>
           <Pressable onPress={closeSheet} disabled={isLoading} hitSlop={12}>
             <MaterialCommunityIcons
               name="close"
@@ -213,7 +215,7 @@ export function PaymentSheet({ sheetRef, onRefresh }: PaymentSheetProps) {
         <Text style={styles.paraText}>
           {SUPPORTS_IN_APP_SUBSCRIPTIONS
             ? 'Get unlimited access to all diseases and drugs. Choose a plan, or use a book scratch code below.'
-            : 'Get unlimited access to all diseases and drugs. Use a book scratch code below.'}
+            : 'If you already own the Doctor On Call physical book, enter the free scratch code from the inside front cover. This redeem is complimentary for book owners and is not a purchase.'}
         </Text>
 
         {SUPPORTS_IN_APP_SUBSCRIPTIONS ? (
@@ -241,12 +243,13 @@ export function PaymentSheet({ sheetRef, onRefresh }: PaymentSheetProps) {
             </Pressable>
           </View>
         ) : (
-          <View style={styles.promoImageCard}>
-            <Image
-              source={ANDROID_PROMO_IMAGE}
-              style={[styles.promoImage, { height: promoImageMaxHeight }]}
-              contentFit="contain"
-            />
+          <View style={styles.androidInfoCard}>
+            <MaterialCommunityIcons name="book-open-page-variant" size={28} color={COLORS.primary} />
+            <Text style={styles.androidInfoTitle}>Free access for book owners</Text>
+            <Text style={styles.androidInfoText}>
+              Scratch codes included with the printed Doctor On Call book unlock 3 months of free app
+              access. No in-app purchase or external payment is required.
+            </Text>
           </View>
         )}
 
@@ -260,7 +263,9 @@ export function PaymentSheet({ sheetRef, onRefresh }: PaymentSheetProps) {
 
         <View style={styles.codeSection}>
           <View style={styles.codeHeaderRow}>
-            <Text style={styles.haveCodeText}>Have a book scratch code?</Text>
+            <Text style={styles.haveCodeText}>
+              {SUPPORTS_IN_APP_SUBSCRIPTIONS ? 'Have a book scratch code?' : 'Enter your book scratch code'}
+            </Text>
             <View style={styles.freeAccessBadge}>
               <MaterialCommunityIcons name="gift-outline" size={14} color={COLORS.buttonSecondary} />
               <Text style={styles.freeAccessBadgeText}>3 months free</Text>
@@ -269,15 +274,15 @@ export function PaymentSheet({ sheetRef, onRefresh }: PaymentSheetProps) {
           <View style={styles.codeBenefitCard}>
             <MaterialCommunityIcons name="book-open-page-variant" size={20} color={COLORS.primary} />
             <Text style={styles.codeBenefitText}>
-              Scratch codes from the Doctor On Call book unlock{' '}
-              <Text style={styles.codeBenefitHighlight}>3 months of free premium access</Text>. Find
-              the code on the inside front cover.
+              Find the code on the{' '}
+              <Text style={styles.codeBenefitHighlight}>inside front cover</Text> of your Doctor On
+              Call book, then enter it below to redeem free access.
             </Text>
           </View>
           <View style={styles.textinputContainer}>
             <MaterialCommunityIcons name="form-textbox-password" color={COLORS.primary} size={20} />
             <BottomSheetTextInput
-              placeholder="Enter code here"
+              placeholder="Enter book code here"
               style={styles.textinput}
               placeholderTextColor={COLORS.textGrey}
               value={code}
@@ -293,7 +298,7 @@ export function PaymentSheet({ sheetRef, onRefresh }: PaymentSheetProps) {
               {isLoading ? (
                 <ActivityIndicator size="small" color={COLORS.white} />
               ) : (
-                <Text style={styles.verifyButtonText}>Verify code</Text>
+                <Text style={styles.verifyButtonText}>Redeem</Text>
               )}
             </Pressable>
           </View>
@@ -302,17 +307,16 @@ export function PaymentSheet({ sheetRef, onRefresh }: PaymentSheetProps) {
           ) : null}
         </View>
 
-        <Pressable
-          onPress={onPressContactUs}
-          style={styles.contactUsFallback}
-          disabled={isLoading}>
-          <MaterialCommunityIcons name="whatsapp" size={18} color={COLORS.textGrey} />
-          <Text style={styles.contactUsFallbackText}>
-            {SUPPORTS_IN_APP_SUBSCRIPTIONS
-              ? 'Need help? Contact us on WhatsApp'
-              : 'NEED HELP - CONTACT US'}
-          </Text>
-        </Pressable>
+        {/* WhatsApp / external purchase links are iOS-only — not allowed on Google Play. */}
+        {SUPPORTS_IN_APP_SUBSCRIPTIONS ? (
+          <Pressable
+            onPress={onPressContactUs}
+            style={styles.contactUsFallback}
+            disabled={isLoading}>
+            <MaterialCommunityIcons name="whatsapp" size={18} color={COLORS.textGrey} />
+            <Text style={styles.contactUsFallbackText}>Need help? Contact us on WhatsApp</Text>
+          </Pressable>
+        ) : null}
       </View>
     </BottomSheetView>
   );
@@ -351,15 +355,25 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     marginBottom: 8,
   },
-  promoImageCard: {
+  androidInfoCard: {
     width: '100%',
+    backgroundColor: '#F3FAFF',
+    borderWidth: 1,
+    borderColor: '#C9E7F8',
     borderRadius: 14,
-    overflow: 'hidden',
-    marginBottom: 8,
-    backgroundColor: COLORS.white,
+    padding: 16,
+    marginBottom: 16,
+    gap: 8,
   },
-  promoImage: {
-    width: '100%',
+  androidInfoTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: COLORS.black,
+  },
+  androidInfoText: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: COLORS.textGrey,
   },
   subscribeBadge: {
     alignSelf: 'flex-start',

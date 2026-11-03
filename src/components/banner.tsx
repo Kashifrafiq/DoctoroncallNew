@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import * as Linking from 'expo-linking';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { COLORS } from '@/constants/colors';
 
@@ -9,16 +9,20 @@ const WHATSAPP_URL =
 
 export function Banner() {
   const onPressContactUs = async () => {
+    // Google Play: do not steer users to WhatsApp / external purchase for digital access.
+    if (Platform.OS === 'android') {
+      return;
+    }
+
     try {
-      // Don't gate on canOpenURL — Android 11+ can return false even when WhatsApp is installed.
       await Linking.openURL(WHATSAPP_URL);
     } catch {
       Alert.alert('WhatsApp', 'Make sure WhatsApp is installed on your device');
     }
   };
 
-  return (
-    <Pressable style={styles.container} onPress={onPressContactUs}>
+  const content = (
+    <>
       <View style={styles.leftContainer}>
         <Text style={styles.mainText}>DOCTOR ON CALL</Text>
         <Text style={styles.secondaryText}>
@@ -26,7 +30,9 @@ export function Banner() {
         </Text>
         <View style={styles.buttonContainer}>
           <View style={styles.insideButton}>
-            <Text style={styles.buttonText}>Buy Now</Text>
+            <Text style={styles.buttonText}>
+              {Platform.OS === 'android' ? 'Physical Book' : 'Buy Now'}
+            </Text>
           </View>
           <Text style={styles.secondaryText}>Latest Edition</Text>
         </View>
@@ -38,6 +44,16 @@ export function Banner() {
           contentFit="contain"
         />
       </View>
+    </>
+  );
+
+  if (Platform.OS === 'android') {
+    return <View style={styles.container}>{content}</View>;
+  }
+
+  return (
+    <Pressable style={styles.container} onPress={onPressContactUs}>
+      {content}
     </Pressable>
   );
 }

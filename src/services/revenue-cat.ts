@@ -14,7 +14,7 @@ const REVENUECAT_API_KEYS = {
   android: process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY ?? 'goog_jbFgWutkCpZZtravuSNgXsclBIe',
 };
 
-/** In-app subscriptions (RevenueCat / Play Billing) are iOS-only. Android uses WhatsApp + codes. */
+/** In-app subscriptions (RevenueCat / Play Billing) are iOS-only. Android uses free book codes only. */
 const SUPPORTS_IN_APP_SUBSCRIPTIONS = Platform.OS === 'ios';
 
 const ENTITLEMENT_ID = 'Premium';
