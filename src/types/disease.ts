@@ -11,6 +11,7 @@ export type DiseaseListItem = {
   slug?: string;
   type?: 'disease' | 'drug';
   categoryId?: string | number;
+  categoryIds?: (string | number)[];
   title: { rendered: string };
   acf?: {
     'questions_&_answers'?: DiseaseSection[];

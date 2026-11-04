@@ -17,6 +17,7 @@ import {
   getDocs,
   limit,
   query,
+  runTransaction,
   serverTimestamp,
   setDoc,
   Timestamp,
@@ -226,27 +227,45 @@ export async function logoutAndClearDevice(uid: string): Promise<boolean> {
 
 export async function storeUserData(
   user: StoreUserAuth,
-  verified: boolean,
   phone: string,
   college: string,
   city: string,
   name: string,
   cnic: string,
-  expiryDate: Date | null,
 ): Promise<boolean> {
   try {
     assertFirebaseReady();
 
-    await setDoc(doc(firestore!, 'users', user.uid), {
-      email: user.email,
-      virified: verified,
-      name,
-      phone,
-      college,
-      city,
-      cnic,
-      expiryDate,
-      createdAt: serverTimestamp(),
+    const profile = { name, phone, college, city, cnic };
+    if (Object.values(profile).some((value) => !value.trim())) {
+      throw new Error('All profile fields are required.');
+    }
+
+    const userRef = doc(firestore!, 'users', user.uid);
+    await runTransaction(firestore!, async (transaction) => {
+      const existingUser = await transaction.get(userRef);
+      const profileUpdates = {
+        email: user.email ?? existingUser.data()?.email ?? null,
+        name: name.trim(),
+        phone: phone.trim(),
+        college: college.trim(),
+        city: city.trim(),
+        cnic: cnic.trim(),
+      };
+
+      if (existingUser.exists()) {
+        // Never replace an existing document here: it may contain subscription
+        // entitlement, device, and audit fields that this form does not own.
+        transaction.update(userRef, profileUpdates);
+        return;
+      }
+
+      transaction.set(userRef, {
+        ...profileUpdates,
+        virified: false,
+        expiryDate: null,
+        createdAt: serverTimestamp(),
+      });
     });
 
     return true;
@@ -315,16 +334,19 @@ export async function getUserData(uid: string): Promise<UserData | null> {
 }
 
 export async function isProfileComplete(uid: string): Promise<boolean> {
-  try {
-    const userData = await getUserData(uid);
+  assertFirebaseReady();
 
-    return Boolean(
-      userData?.name && userData.phone && userData.college && userData.city && userData.cnic,
-    );
-  } catch (error) {
-    console.error('Error checking profile completion:', error);
+  // A failed read must not be interpreted as an incomplete profile. Otherwise a
+  // returning user could be sent to the profile form while offline or denied.
+  const userDoc = await getDoc(doc(firestore!, 'users', uid));
+  if (!userDoc.exists()) {
     return false;
   }
+
+  const userData = userDoc.data() as UserData;
+  return Boolean(
+    userData.name && userData.phone && userData.college && userData.city && userData.cnic,
+  );
 }
 
 export async function checkCodeStatus(code: string): Promise<CodeStatusResponse> {

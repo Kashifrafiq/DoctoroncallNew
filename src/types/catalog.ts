@@ -18,6 +18,8 @@ export type SearchResultItem = {
   sections?: unknown;
   shortDescription?: string;
   htmlContent?: string;
+  categoryId?: string | number;
+  categoryIds?: (string | number)[];
   'disease-category'?: (string | number)[];
   drug_category?: (string | number)[];
 };

@@ -34,10 +34,27 @@ let db: Firestore | null = null;
 
 function initAuth(firebaseApp: FirebaseApp): Auth {
   try {
+    if (typeof getReactNativePersistence !== 'function') {
+      throw new Error(
+        'getReactNativePersistence is unavailable. Ensure metro.config.js disables package exports for Firebase Auth.',
+      );
+    }
+
     return initializeAuth(firebaseApp, {
       persistence: getReactNativePersistence(AsyncStorage),
     });
-  } catch {
+  } catch (error) {
+    // initializeAuth throws if Auth was already initialized (e.g. Fast Refresh).
+    // Any other failure falls back to getAuth(), which is memory-only on RN.
+    const message = error instanceof Error ? error.message : String(error);
+    if (message.includes('already been initialized')) {
+      return getAuth(firebaseApp);
+    }
+
+    console.warn(
+      '[firebase] Auth persistence init failed; sessions may not survive app restarts.',
+      error,
+    );
     return getAuth(firebaseApp);
   }
 }

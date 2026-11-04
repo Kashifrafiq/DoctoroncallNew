@@ -14,6 +14,9 @@ const REVENUECAT_API_KEYS = {
   android: process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY ?? 'goog_jbFgWutkCpZZtravuSNgXsclBIe',
 };
 
+/** In-app subscriptions (RevenueCat / Play Billing) are iOS-only. Android uses free book codes only. */
+const SUPPORTS_IN_APP_SUBSCRIPTIONS = Platform.OS === 'ios';
+
 const ENTITLEMENT_ID = 'Premium';
 const OFFERING_ID = 'Premium';
 
@@ -80,17 +83,42 @@ export function getPlanProduct(
 
 class RevenueCatServiceClass {
   isInitialized = false;
+  private initPromise: Promise<boolean> | null = null;
 
   getApiKey(): string {
     return Platform.OS === 'ios' ? REVENUECAT_API_KEYS.ios : REVENUECAT_API_KEYS.android;
   }
 
   async initialize(userId: string | null = null): Promise<boolean> {
-    try {
-      if (this.isInitialized) {
-        return true;
-      }
+    if (!SUPPORTS_IN_APP_SUBSCRIPTIONS) {
+      return false;
+    }
 
+    if (this.isInitialized) {
+      if (userId) {
+        await this.logIn(userId);
+      }
+      return true;
+    }
+
+    if (this.initPromise) {
+      const ok = await this.initPromise;
+      if (ok && userId) {
+        await this.logIn(userId);
+      }
+      return ok;
+    }
+
+    this.initPromise = this.doInitialize(userId);
+    try {
+      return await this.initPromise;
+    } finally {
+      this.initPromise = null;
+    }
+  }
+
+  private async doInitialize(userId: string | null): Promise<boolean> {
+    try {
       const apiKey = this.getApiKey();
       if (!apiKey || apiKey.includes('REVENUECAT_')) {
         console.warn('RevenueCat API key is not configured yet.');
@@ -137,7 +165,7 @@ class RevenueCatServiceClass {
   }
 
   async getAvailablePlans(): Promise<SubscriptionPlan[]> {
-    if (!this.isInitialized) {
+    if (!SUPPORTS_IN_APP_SUBSCRIPTIONS || !this.isInitialized) {
       return [];
     }
 
@@ -218,6 +246,9 @@ class RevenueCatServiceClass {
   }
 
   async purchasePlan(plan: SubscriptionPlan | null): Promise<PurchaseResult> {
+    if (!SUPPORTS_IN_APP_SUBSCRIPTIONS) {
+      return { success: false, error: 'In-app subscriptions are not available on this platform' };
+    }
     if (!this.isInitialized) {
       return { success: false, error: 'RevenueCat is not initialized' };
     }
@@ -254,6 +285,9 @@ class RevenueCatServiceClass {
   }
 
   async restorePurchases(): Promise<PurchaseResult> {
+    if (!SUPPORTS_IN_APP_SUBSCRIPTIONS) {
+      return { success: false, error: 'In-app subscriptions are not available on this platform' };
+    }
     if (!this.isInitialized) {
       return { success: false, error: 'RevenueCat is not initialized' };
     }
@@ -309,6 +343,32 @@ class RevenueCatServiceClass {
     return 30;
   }
 
+  /** Prefer RevenueCat's real store expiration over product-id guesses. */
+  private resolveExpiryFromCustomerInfo(
+    customerInfo: CustomerInfo,
+    productId?: string | null,
+  ): Date | null {
+    const fromProduct =
+      productId && customerInfo.allExpirationDates?.[productId]
+        ? customerInfo.allExpirationDates[productId]
+        : null;
+    const fromSubscription =
+      productId && customerInfo.subscriptionsByProductIdentifier?.[productId]?.expiresDate
+        ? customerInfo.subscriptionsByProductIdentifier[productId].expiresDate
+        : null;
+    const raw =
+      fromProduct ??
+      fromSubscription ??
+      customerInfo.latestExpirationDate ??
+      null;
+
+    if (!raw) {
+      return null;
+    }
+    const date = new Date(raw);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
   async syncVerificationFromCustomerInfo(customerInfo: CustomerInfo): Promise<boolean> {
     try {
       const user = auth().currentUser;
@@ -327,16 +387,29 @@ class RevenueCatServiceClass {
       if (entitlement) {
         expiryDate = entitlement.expirationDate
           ? new Date(entitlement.expirationDate)
-          : new Date(verifiedAt.getTime() + 1000 * 60 * 60 * 24 * 30);
+          : this.resolveExpiryFromCustomerInfo(
+              customerInfo,
+              entitlement.productIdentifier,
+            ) ?? new Date(verifiedAt.getTime() + 1000 * 60 * 60 * 24 * 30);
       } else if (activeSubscriptions.length > 0) {
         // Purchase can succeed with activeSubscriptions even when the Premium
-        // entitlement is missing/misconfigured in RevenueCat. Do NOT mark unverified.
-        const days = this.getFallbackExpiryDays(activeSubscriptions[0]);
-        expiryDate = new Date(verifiedAt.getTime() + 1000 * 60 * 60 * 24 * days);
-        console.warn(
-          'RevenueCat has active subscription but no entitlement; unlocking with fallback expiry.',
-          { subscription: activeSubscriptions[0], days },
-        );
+        // entitlement is missing/misconfigured in RevenueCat. Prefer RC's real
+        // expiration dates so Firestore matches the dashboard.
+        const productId = activeSubscriptions[0];
+        expiryDate = this.resolveExpiryFromCustomerInfo(customerInfo, productId);
+        if (!expiryDate) {
+          const days = this.getFallbackExpiryDays(productId);
+          expiryDate = new Date(verifiedAt.getTime() + 1000 * 60 * 60 * 24 * days);
+          console.warn(
+            'RevenueCat has active subscription but no entitlement or expiration; using day fallback.',
+            { subscription: productId, days },
+          );
+        } else {
+          console.warn(
+            'RevenueCat has active subscription but no entitlement; unlocking with RC expiration.',
+            { subscription: productId, expiryDate: expiryDate.toISOString() },
+          );
+        }
       } else {
         await updateUserData(user.uid, 'virified', false);
         return false;

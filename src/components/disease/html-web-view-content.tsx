@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 
 import { COLORS } from '@/constants/colors';
@@ -9,37 +9,95 @@ type HtmlWebViewContentProps = {
   onImagePress?: (uri: string) => void;
 };
 
-const measureHeightJS = `
+const setupContentJS = `
   (function() {
     var content = document.getElementById('content');
     if (!content) return;
-    var h = content.offsetHeight + 20;
-    window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'height', value: h }));
+
+    var hasTable = false;
+    var maxWidth = content.offsetWidth || window.innerWidth || 0;
+
+    content.querySelectorAll('table').forEach(function(table) {
+      hasTable = true;
+      if (table.parentElement && !table.parentElement.classList.contains('table-scroll')) {
+        var wrap = document.createElement('div');
+        wrap.className = 'table-scroll';
+        table.parentNode.insertBefore(wrap, table);
+        wrap.appendChild(table);
+      }
+      maxWidth = Math.max(maxWidth, Math.ceil(table.scrollWidth) + 20);
+    });
+
+    var height = Math.ceil(Math.max(content.scrollHeight, content.offsetHeight) + 20);
+
+    window.ReactNativeWebView.postMessage(JSON.stringify({
+      type: 'size',
+      width: maxWidth,
+      height: height,
+      hasTable: hasTable
+    }));
   })();
   true;
 `;
 
 export function HtmlWebViewContent({ html, onImagePress }: HtmlWebViewContentProps) {
-  const [contentHeight, setContentHeight] = useState(0);
+  const [contentSize, setContentSize] = useState({ width: 0, height: 0 });
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [hasTable, setHasTable] = useState(false);
   const webViewRef = useRef<WebView>(null);
+  const lastRemeasureWidth = useRef(0);
 
   useEffect(() => {
-    setContentHeight(0);
-  }, [html]);
+    setContentSize({ width: 0, height: 0 });
+    setHasTable(false);
+    lastRemeasureWidth.current = 0;
+  }, [html, containerWidth]);
+
+  const canScrollHorizontally =
+    hasTable && containerWidth > 0 && contentSize.width > containerWidth + 2;
+  const webViewWidth = canScrollHorizontally
+    ? Math.max(contentSize.width, containerWidth)
+    : Math.max(containerWidth, 1);
+  const ready = contentSize.height > 0 && containerWidth > 0;
+
+  useEffect(() => {
+    if (!ready || !html) {
+      return;
+    }
+
+    if (webViewWidth <= lastRemeasureWidth.current + 2) {
+      return;
+    }
+
+    lastRemeasureWidth.current = webViewWidth;
+    const timer = setTimeout(() => {
+      webViewRef.current?.injectJavaScript(setupContentJS);
+    }, 120);
+
+    return () => clearTimeout(timer);
+  }, [ready, webViewWidth, html]);
 
   if (!html) {
     return null;
   }
+
+  // Text wraps to the visible card width; only tables may extend past it.
+  const textColumnWidth = Math.max(containerWidth, 1);
 
   const htmlContent = `
     <!DOCTYPE html>
     <html>
       <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+        <meta name="viewport" content="width=${textColumnWidth}, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
-          html, body { width: 100%; height: auto !important; overflow: visible; }
+          html, body {
+            width: ${textColumnWidth}px;
+            margin: 0;
+            height: auto !important;
+            overflow: visible;
+          }
           body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             font-size: 14px;
@@ -47,16 +105,37 @@ export function HtmlWebViewContent({ html, onImagePress }: HtmlWebViewContentPro
             color: #111;
             background-color: ${COLORS.infoCardBg};
             padding: 10px;
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
             -webkit-user-select: none;
             user-select: none;
             -webkit-touch-callout: none;
           }
-          h1, h2, h3, h4, h5, h6 { color: #111; margin: 10px 0; }
+          #content {
+            width: ${textColumnWidth - 20}px;
+            max-width: ${textColumnWidth - 20}px;
+            overflow: visible;
+          }
+          h1, h2, h3, h4, h5, h6 { color: #111; margin: 10px 0; font-size: 16px; }
           p { margin: 10px 0; }
           ul, ol { margin: 10px 0; padding-left: 20px; }
           li { margin: 4px 0; }
-          table { width: 100%; border-collapse: collapse; margin: 10px 0; }
-          th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+          .table-scroll {
+            width: max-content;
+            max-width: none;
+            margin: 10px 0;
+          }
+          table {
+            width: max-content;
+            border-collapse: collapse;
+            margin: 0;
+          }
+          th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            white-space: nowrap;
+          }
           th { background: #f0f0f0; }
           img { max-width: 100%; width: 100%; height: auto; display: block; border-radius: 4px; margin: 10px 0; }
           a { color: #d63384; text-decoration: none; }
@@ -86,10 +165,17 @@ export function HtmlWebViewContent({ html, onImagePress }: HtmlWebViewContentPro
       const data = JSON.parse(event.nativeEvent.data) as {
         type?: string;
         value?: number | string;
+        width?: number;
+        height?: number;
+        hasTable?: boolean;
       };
 
-      if (data.type === 'height' && typeof data.value === 'number' && data.value > 0) {
-        setContentHeight(data.value);
+      if (data.type === 'size' && typeof data.width === 'number' && typeof data.height === 'number') {
+        setContentSize({
+          width: Math.max(data.width, 1),
+          height: Math.max(data.height, 1),
+        });
+        setHasTable(Boolean(data.hasTable));
       } else if (data.type === 'imagePress' && typeof data.value === 'string' && onImagePress) {
         onImagePress(data.value);
       }
@@ -100,29 +186,71 @@ export function HtmlWebViewContent({ html, onImagePress }: HtmlWebViewContentPro
 
   const onLoadEnd = () => {
     setTimeout(() => {
-      webViewRef.current?.injectJavaScript(measureHeightJS);
+      webViewRef.current?.injectJavaScript(setupContentJS);
     }, 250);
     setTimeout(() => {
-      webViewRef.current?.injectJavaScript(measureHeightJS);
+      webViewRef.current?.injectJavaScript(setupContentJS);
     }, 700);
   };
 
-  return (
-    <View style={styles.webViewContainer}>
-      <WebView
-        ref={webViewRef}
-        source={{ html: htmlContent }}
-        onMessage={handleMessage}
-        onLoadEnd={onLoadEnd}
-        javaScriptEnabled
-        scrollEnabled={false}
-        showsVerticalScrollIndicator={false}
-        showsHorizontalScrollIndicator={false}
-        style={[
-          styles.webView,
-          { height: contentHeight > 0 ? contentHeight : 1, opacity: contentHeight > 0 ? 1 : 0 },
-        ]}
+  // Wait for card width so text wraps correctly from the first paint.
+  if (containerWidth <= 0) {
+    return (
+      <View
+        style={styles.webViewContainer}
+        onLayout={(event) => {
+          const nextWidth = Math.round(event.nativeEvent.layout.width);
+          if (nextWidth > 0) {
+            setContainerWidth(nextWidth);
+          }
+        }}
       />
+    );
+  }
+
+  return (
+    <View
+      style={styles.webViewContainer}
+      onLayout={(event) => {
+        const nextWidth = Math.round(event.nativeEvent.layout.width);
+        if (nextWidth > 0 && nextWidth !== containerWidth) {
+          setContainerWidth(nextWidth);
+        }
+      }}>
+      {canScrollHorizontally ? (
+        <Text style={styles.scrollHint}>
+          Swipe the table sideways for more columns. To move the page, scroll beside the table.
+        </Text>
+      ) : null}
+
+      <ScrollView
+        horizontal
+        bounces={false}
+        directionalLockEnabled
+        nestedScrollEnabled
+        scrollEnabled={canScrollHorizontally}
+        showsHorizontalScrollIndicator={canScrollHorizontally}
+        showsVerticalScrollIndicator={false}>
+        <WebView
+          key={`html-${containerWidth}`}
+          ref={webViewRef}
+          source={{ html: htmlContent }}
+          onMessage={handleMessage}
+          onLoadEnd={onLoadEnd}
+          javaScriptEnabled
+          scrollEnabled={false}
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
+          style={[
+            styles.webView,
+            {
+              width: webViewWidth,
+              height: contentSize.height > 0 ? contentSize.height : 1,
+              opacity: ready ? 1 : 0,
+            },
+          ]}
+        />
+      </ScrollView>
     </View>
   );
 }
@@ -130,12 +258,23 @@ export function HtmlWebViewContent({ html, onImagePress }: HtmlWebViewContentPro
 const styles = StyleSheet.create({
   webViewContainer: {
     width: '100%',
+    minHeight: 1,
     borderRadius: 8,
     overflow: 'hidden',
     backgroundColor: COLORS.white,
   },
   webView: {
-    width: '100%',
     backgroundColor: 'transparent',
+  },
+  scrollHint: {
+    fontSize: 12,
+    lineHeight: 16,
+    color: COLORS.textGrey,
+    paddingHorizontal: 4,
+    paddingBottom: 6,
+    ...Platform.select({
+      ios: { fontStyle: 'italic' },
+      default: {},
+    }),
   },
 });

@@ -1,12 +1,12 @@
 import { type Href, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 
 import { CustomButton } from '@/components/custom-button';
 import { CustomInput } from '@/components/inputs/custom-input';
 import { KeyboardAwareScrollView } from '@/components/keyboard-aware-scroll-view';
 import { COLORS } from '@/constants/colors';
-import { auth, storeUserData } from '@/services/firebase-functions';
+import { auth, getUserData, storeUserData } from '@/services/firebase-functions';
 
 export default function ProfileCompletionScreen() {
   const router = useRouter();
@@ -15,9 +15,48 @@ export default function ProfileCompletionScreen() {
   const [college, setCollege] = useState('');
   const [city, setCity] = useState('');
   const [cnic, setCnic] = useState('');
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+
+  useEffect(() => {
+    const loadExistingProfile = async () => {
+      try {
+        const user = auth().currentUser;
+        if (!user) {
+          return;
+        }
+
+        const existingProfile = await getUserData(user.uid);
+        if (!existingProfile) {
+          return;
+        }
+
+        setName(existingProfile.name ?? '');
+        setPhone(existingProfile.phone ?? '');
+        setCollege(existingProfile.college ?? '');
+        setCity(existingProfile.city ?? '');
+        setCnic(existingProfile.cnic ?? '');
+      } catch (error) {
+        console.error('Error loading existing profile:', error);
+        Alert.alert('Unable to load profile', 'Please check your connection and try again.');
+      } finally {
+        setIsLoadingProfile(false);
+      }
+    };
+
+    void loadExistingProfile();
+  }, []);
 
   const onPressContinue = async () => {
     try {
+      if (isLoadingProfile) {
+        return;
+      }
+
+      if (![name, phone, college, city, cnic].every((value) => value.trim())) {
+        Alert.alert('Incomplete Data', 'Please fill in all profile fields.');
+        return;
+      }
+
       const user = auth().currentUser;
 
       if (!user) {
@@ -27,13 +66,11 @@ export default function ProfileCompletionScreen() {
 
       const stored = await storeUserData(
         user,
-        false,
         phone,
         college,
         city,
         name,
         cnic,
-        null,
       );
 
       if (stored) {
@@ -95,7 +132,12 @@ export default function ProfileCompletionScreen() {
           />
         </View>
 
-        <CustomButton text="Continue" type="primary" onPress={onPressContinue} />
+        <CustomButton
+          text="Continue"
+          type="primary"
+          onPress={onPressContinue}
+          loading={isLoadingProfile}
+        />
       </View>
     </KeyboardAwareScrollView>
   );

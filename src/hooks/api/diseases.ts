@@ -2,9 +2,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
 
 import {
+  fetchDocById,
   fetchDocsByCategoryId,
   getCollectionSnapshot,
   mapCategoryDoc,
+  resolveMembershipCategoryIds,
 } from '@/hooks/api/firestore-helpers';
 import { searchByNamePrefix } from '@/hooks/api/firestore-search';
 import type { CategoryItem, SearchResultItem } from '@/types/catalog';
@@ -26,12 +28,11 @@ function mapDiseaseDoc(doc: QueryDocumentSnapshot<DocumentData, DocumentData>): 
       : (data.title?.rendered ?? data.titleRendered ?? ''));
 
   const categoryId = data.categoryId;
-  const fromArray = data['disease-category'] ?? data.diseaseCategory;
-  const diseaseCategory = Array.isArray(fromArray)
-    ? fromArray
-    : categoryId != null
-      ? [categoryId]
-      : [];
+  const diseaseCategory = resolveMembershipCategoryIds(
+    categoryId,
+    data.categoryIds,
+    data['disease-category'] ?? data.diseaseCategory,
+  );
 
   const { sections, acf } = buildContentSectionsForUi(data);
 
@@ -45,6 +46,7 @@ function mapDiseaseDoc(doc: QueryDocumentSnapshot<DocumentData, DocumentData>): 
     htmlContent: data.htmlContent,
     acf,
     categoryId,
+    categoryIds: diseaseCategory,
     type: 'disease',
     'disease-category': diseaseCategory,
   };
@@ -79,6 +81,16 @@ export async function getDiseasesByCategoryId(
   } catch (error) {
     console.error('Error fetching diseases by categoryId:', error);
     return [];
+  }
+}
+
+export async function getDiseaseById(id: string | number): Promise<DiseaseListItem | null> {
+  try {
+    const docSnap = await fetchDocById(COL_DISEASES, id);
+    return docSnap ? mapDiseaseDoc(docSnap) : null;
+  } catch (error) {
+    console.error('Error fetching disease by id:', error);
+    return null;
   }
 }
 
