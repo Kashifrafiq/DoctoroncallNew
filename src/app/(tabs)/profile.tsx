@@ -16,6 +16,7 @@ import {
   updateUserData,
   type UserData,
 } from '@/services/firebase-functions';
+import { RevenueCatService } from '@/services/revenue-cat';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -180,6 +181,7 @@ export default function ProfileScreen() {
         await logoutAndClearDevice(currentUser.uid);
       }
 
+      await RevenueCatService.logOut();
       await auth().signOut();
       router.replace('/auth/login' as Href);
     } catch (error) {

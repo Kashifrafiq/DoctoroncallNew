@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -86,7 +85,15 @@ const FEATURES = [
 const AVATARS = ['DR', 'MS', 'AK', '+'];
 
 function planTitle(plan: SubscriptionPlan) {
-  const id = plan.identifier || '';
+  const id = (plan.identifier || '').toLowerCase();
+  if (
+    id.includes('year') ||
+    id.includes('annual') ||
+    id.includes('early-15') ||
+    id.includes('rc_10_year')
+  ) {
+    return 'Yearly Access';
+  }
   if (id.includes('qtr') || id.includes('quarter') || id.includes('six')) {
     return 'Quarterly Access';
   }
@@ -101,8 +108,15 @@ function planPrice(plan: SubscriptionPlan) {
 }
 
 function isBestValue(plan: SubscriptionPlan | null | undefined) {
-  const id = plan?.identifier || '';
-  return id.includes('qtr') || id.includes('quarter') || id.includes('six');
+  const id = (plan?.identifier || '').toLowerCase();
+  return (
+    id.includes('year') ||
+    id.includes('annual') ||
+    id.includes('early-15') ||
+    id.includes('qtr') ||
+    id.includes('quarter') ||
+    id.includes('six')
+  );
 }
 
 function KickerLine() {
@@ -233,12 +247,8 @@ export default function PaywallScreen() {
   };
 
   useEffect(() => {
-    if (Platform.OS !== 'ios') {
-      router.replace('/');
-      return;
-    }
     loadPackages();
-  }, [router]);
+  }, []);
 
   const selectedPrice = useMemo(() => {
     return getPlanProduct(selectedPlan)?.priceString || '';
@@ -248,9 +258,14 @@ export default function PaywallScreen() {
     if (!selectedPlan) {
       return '';
     }
-    return isBestValue(selectedPlan)
-      ? 'Quarterly plan — best value, save vs monthly'
-      : 'Monthly plan — cancel anytime from your store';
+    const id = (selectedPlan.identifier || '').toLowerCase();
+    if (id.includes('year') || id.includes('annual') || id.includes('early-15')) {
+      return 'Yearly plan — best value, save vs monthly';
+    }
+    if (id.includes('qtr') || id.includes('quarter') || id.includes('six')) {
+      return 'Quarterly plan — best value, save vs monthly';
+    }
+    return 'Monthly plan — cancel anytime from your store';
   }, [selectedPlan]);
 
   const onSubscribe = async () => {
@@ -312,7 +327,7 @@ export default function PaywallScreen() {
     }
   };
 
-  return Platform.OS !== 'ios' ? null : (
+  return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>

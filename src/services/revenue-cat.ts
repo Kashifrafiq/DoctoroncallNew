@@ -14,15 +14,16 @@ const REVENUECAT_API_KEYS = {
   android: process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY ?? 'goog_jbFgWutkCpZZtravuSNgXsclBIe',
 };
 
-/** In-app subscriptions (RevenueCat / Play Billing) are iOS-only. Android uses free book codes only. */
-const SUPPORTS_IN_APP_SUBSCRIPTIONS = Platform.OS === 'ios';
+/** In-app subscriptions via RevenueCat (App Store + Google Play Billing). */
+const SUPPORTS_IN_APP_SUBSCRIPTIONS = Platform.OS === 'ios' || Platform.OS === 'android';
 
 const ENTITLEMENT_ID = 'Premium';
 const OFFERING_ID = 'Premium';
 
+/** New Play Console products (same RC offering as iOS). No quarterly for Android yet. */
 const ANDROID_STORE_PRODUCT_IDS = [
-  'annual_subscription:rc-10-qtr',
-  'annual_subscription:rc-5-monthly',
+  'doctoroncall_premium:rc-early-15', // yearly
+  'doctoroncall_premium:rc-monthly-5', // monthly
 ] as const;
 
 type PurchaseResult = {
@@ -180,11 +181,27 @@ class RevenueCatServiceClass {
     }
   }
 
+  /**
+   * Android: load only the new Play product IDs via getProducts.
+   * Do NOT require getOfferings() — the shared RC offering still lists old Play
+   * products (rc_10_yearly / annual_subscription) that don't exist on the new app,
+   * which makes offerings fail with ConfigurationError.
+   */
   private async getAndroidPlans(): Promise<SubscriptionPlan[]> {
     const storeProducts = await Purchases.getProducts([...ANDROID_STORE_PRODUCT_IDS]);
-    const offerings = await Purchases.getOfferings();
-    const offering = (OFFERING_ID && offerings?.all?.[OFFERING_ID]) || offerings?.current;
-    const packages = offering?.availablePackages ?? [];
+
+    // Optional: attach RC packages when offerings work; ignore offering failures.
+    let packages: PurchasesPackage[] = [];
+    try {
+      const offerings = await Purchases.getOfferings();
+      const offering = (OFFERING_ID && offerings?.all?.[OFFERING_ID]) || offerings?.current;
+      packages = offering?.availablePackages ?? [];
+    } catch (error) {
+      console.warn(
+        'RevenueCat offerings unavailable on Android (old Play products in offering). Using store products only.',
+        error,
+      );
+    }
 
     const plans: SubscriptionPlan[] = [];
     for (const productId of ANDROID_STORE_PRODUCT_IDS) {
@@ -195,6 +212,13 @@ class RevenueCatServiceClass {
       if (storeProduct || revenueCatPackage) {
         plans.push({ identifier: productId, revenueCatPackage, storeProduct });
       }
+    }
+
+    if (plans.length === 0) {
+      console.warn(
+        'No Android subscription products found. Ensure these are Active in Play Console and attached in RevenueCat:',
+        ANDROID_STORE_PRODUCT_IDS,
+      );
     }
 
     return plans;
@@ -218,12 +242,19 @@ class RevenueCatServiceClass {
     }
 
     const priority = [
+      'rc-early-15',
+      'rc_10_year',
+      'rc_10_yearly',
+      'yearly',
+      'annual',
+      'year',
       'rc-10-qtr',
       'rc_10_qtr',
       'quarter',
       'qtr',
       'six_month',
       '$rc_six_month',
+      'rc-monthly-5',
       'rc-5-monthly',
       'rc_5_monthly',
       'monthly',
@@ -304,16 +335,32 @@ class RevenueCatServiceClass {
   }
 
   /**
-   * If Firestore access looks inactive, re-check RevenueCat and sync verification.
-   * Helps recover when a purchase succeeded but entitlements/Firestore were out of sync.
+   * Re-check RevenueCat and sync verification to Firestore.
+   * Only call after an explicit purchase/restore — never on every login.
+   * Play subscriptions belong to the Google account on the device; auto-syncing
+   * would unlock every Firebase user who signs in on a subscribed phone.
    */
   async ensurePremiumSynced(): Promise<boolean> {
     try {
       const userId = auth().currentUser?.uid ?? null;
-      if (!this.isInitialized) {
-        await this.initialize(userId);
+      if (!userId) {
+        return false;
       }
       if (!this.isInitialized) {
+        await this.initialize(userId);
+      } else {
+        await this.logIn(userId);
+      }
+      if (!this.isInitialized) {
+        return false;
+      }
+
+      const appUserId = await Purchases.getAppUserID();
+      if (appUserId !== userId) {
+        console.warn('Skipping premium sync: RevenueCat app user does not match Firebase uid', {
+          appUserId,
+          userId,
+        });
         return false;
       }
 
@@ -337,7 +384,12 @@ class RevenueCatServiceClass {
     if (id.includes('six')) {
       return 180;
     }
-    if (id.includes('annual') || id.includes('year')) {
+    if (
+      id.includes('annual') ||
+      id.includes('year') ||
+      id.includes('early-15') ||
+      id.includes('rc_10_year')
+    ) {
       return 365;
     }
     return 30;
@@ -373,6 +425,16 @@ class RevenueCatServiceClass {
     try {
       const user = auth().currentUser;
       if (!user || !customerInfo) {
+        return false;
+      }
+
+      // Guard: never write Play entitlements onto a different Firebase account.
+      const appUserId = await Purchases.getAppUserID().catch(() => null);
+      if (appUserId && appUserId !== user.uid) {
+        console.warn('Refusing to sync premium: RC user mismatch', {
+          appUserId,
+          firebaseUid: user.uid,
+        });
         return false;
       }
 

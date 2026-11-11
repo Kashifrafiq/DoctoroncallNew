@@ -25,7 +25,6 @@ import { getdrugsCatogery, searchMedicines } from '@/hooks/api/drugs';
 import { MIN_SEARCH_LENGTH } from '@/hooks/api/firestore-search';
 import { auth, getUserData, isProfileComplete, type UserData } from '@/services/firebase-functions';
 import { calculateDaysLeft } from '@/services/helper';
-import { RevenueCatService } from '@/services/revenue-cat';
 import type { CategoryItem, SearchResultItem } from '@/types/catalog';
 
 function isSubscriptionActive(user?: UserData): boolean {
@@ -81,15 +80,10 @@ export default function HomeScreen() {
       return;
     }
 
-    let data = await getUserData(currentUser.uid);
-
-    // If Firestore still shows locked after a successful purchase, re-sync from RevenueCat (iOS only).
-    if (Platform.OS === 'ios' && !isSubscriptionActive(data ?? undefined)) {
-      const synced = await RevenueCatService.ensurePremiumSynced();
-      if (synced) {
-        data = await getUserData(currentUser.uid);
-      }
-    }
+    // Trust Firestore only here. Do NOT auto-sync Play/RevenueCat entitlements on login —
+    // a device Google Play subscription would otherwise unlock every Firebase account
+    // that signs in on this phone (~19 days left = that device purchase).
+    const data = await getUserData(currentUser.uid);
 
     setUser(data ?? undefined);
 

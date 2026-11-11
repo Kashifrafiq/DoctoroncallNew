@@ -29,8 +29,10 @@ import { RevenueCatService } from '@/services/revenue-cat';
 const WHATSAPP_URL =
   'https://api.whatsapp.com/send?phone=+9203175193394&text=Hello.%20I%20have%20installed%20Doctor%20Oncall%20App.%20How%20I%20can%20get%20premium%20access%20to%20all%20drugs%20and%20diseases%20?%20';
 
-/** In-app subscriptions are iOS-only. Android only redeems free book codes (no external payments). */
-const SUPPORTS_IN_APP_SUBSCRIPTIONS = Platform.OS === 'ios';
+/** In-app subscriptions via store billing (App Store / Google Play). */
+const SUPPORTS_IN_APP_SUBSCRIPTIONS = Platform.OS === 'ios' || Platform.OS === 'android';
+/** WhatsApp help can look like external payment steering on Google Play — iOS only. */
+const SHOW_WHATSAPP_HELP = Platform.OS === 'ios';
 
 type PaymentSheetProps = {
   sheetRef: RefObject<BottomSheetModal | null>;
@@ -307,8 +309,7 @@ export function PaymentSheet({ sheetRef, onRefresh }: PaymentSheetProps) {
           ) : null}
         </View>
 
-        {/* WhatsApp / external purchase links are iOS-only — not allowed on Google Play. */}
-        {SUPPORTS_IN_APP_SUBSCRIPTIONS ? (
+        {SHOW_WHATSAPP_HELP ? (
           <Pressable
             onPress={onPressContactUs}
             style={styles.contactUsFallback}

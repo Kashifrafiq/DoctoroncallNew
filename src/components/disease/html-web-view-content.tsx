@@ -53,6 +53,22 @@ export function HtmlWebViewContent({ html, onImagePress }: HtmlWebViewContentPro
     lastRemeasureWidth.current = 0;
   }, [html, containerWidth]);
 
+  useEffect(() => {
+    if (!html) {
+      console.log('[DiseaseHTML] no html content');
+      return;
+    }
+
+    const imgSrcMatches = [...html.matchAll(/<img[^>]+src=["']([^"']+)["']/gi)].map(
+      (match) => match[1],
+    );
+
+    console.log('[DiseaseHTML] raw html length:', html.length);
+    console.log('[DiseaseHTML] raw html:', html);
+    console.log('[DiseaseHTML] img src count:', imgSrcMatches.length);
+    console.log('[DiseaseHTML] img srcs:', imgSrcMatches);
+  }, [html]);
+
   const canScrollHorizontally =
     hasTable && containerWidth > 0 && contentSize.width > containerWidth + 2;
   const webViewWidth = canScrollHorizontally
@@ -146,6 +162,35 @@ export function HtmlWebViewContent({ html, onImagePress }: HtmlWebViewContentPro
       <body>
         <div id="content">${html}</div>
         <script>
+          (function() {
+            var imgs = Array.prototype.slice.call(document.querySelectorAll('img'));
+            var srcs = imgs.map(function(img) { return img.getAttribute('src') || img.src || ''; });
+            window.ReactNativeWebView.postMessage(JSON.stringify({
+              type: 'imageDebug',
+              count: imgs.length,
+              srcs: srcs
+            }));
+
+            imgs.forEach(function(img, index) {
+              img.addEventListener('error', function() {
+                window.ReactNativeWebView.postMessage(JSON.stringify({
+                  type: 'imageError',
+                  index: index,
+                  src: img.getAttribute('src') || img.src || ''
+                }));
+              });
+              img.addEventListener('load', function() {
+                window.ReactNativeWebView.postMessage(JSON.stringify({
+                  type: 'imageLoad',
+                  index: index,
+                  src: img.getAttribute('src') || img.src || '',
+                  naturalWidth: img.naturalWidth,
+                  naturalHeight: img.naturalHeight
+                }));
+              });
+            });
+          })();
+
           document.addEventListener('click', function(e) {
             var el = e.target;
             if (el && el.tagName === 'IMG' && el.src) {
@@ -168,6 +213,12 @@ export function HtmlWebViewContent({ html, onImagePress }: HtmlWebViewContentPro
         width?: number;
         height?: number;
         hasTable?: boolean;
+        count?: number;
+        srcs?: string[];
+        index?: number;
+        src?: string;
+        naturalWidth?: number;
+        naturalHeight?: number;
       };
 
       if (data.type === 'size' && typeof data.width === 'number' && typeof data.height === 'number') {
@@ -176,6 +227,12 @@ export function HtmlWebViewContent({ html, onImagePress }: HtmlWebViewContentPro
           height: Math.max(data.height, 1),
         });
         setHasTable(Boolean(data.hasTable));
+      } else if (data.type === 'imageDebug') {
+        console.log('[DiseaseHTML] WebView images found:', data.count, data.srcs);
+      } else if (data.type === 'imageError') {
+        console.warn('[DiseaseHTML] image failed to load:', data.index, data.src);
+      } else if (data.type === 'imageLoad') {
+        console.log('[DiseaseHTML] image loaded:', data.index, data.src, data.naturalWidth, data.naturalHeight);
       } else if (data.type === 'imagePress' && typeof data.value === 'string' && onImagePress) {
         onImagePress(data.value);
       }
