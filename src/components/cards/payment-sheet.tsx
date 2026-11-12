@@ -228,7 +228,7 @@ export function PaymentSheet({ sheetRef, onRefresh }: PaymentSheetProps) {
             </View>
             <Text style={styles.subscribeTitle}>Subscription plans</Text>
             <Text style={styles.subscribeSubtitle}>
-              See monthly and quarterly options, then unlock instantly.
+              See monthly, 6-month, and yearly options, then unlock instantly.
             </Text>
             <Pressable
               style={[styles.primaryButton, isLoading && styles.buttonDisabled]}

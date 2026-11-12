@@ -20,9 +20,10 @@ const SUPPORTS_IN_APP_SUBSCRIPTIONS = Platform.OS === 'ios' || Platform.OS === '
 const ENTITLEMENT_ID = 'Premium';
 const OFFERING_ID = 'Premium';
 
-/** New Play Console products (same RC offering as iOS). No quarterly for Android yet. */
+/** New Play Console products attached in RevenueCat (Premium offering). */
 const ANDROID_STORE_PRODUCT_IDS = [
   'doctoroncall_premium:rc-early-15', // yearly
+  'doctoroncall_premium:rc-qtr-10', // 6-month ($rc_six_month)
   'doctoroncall_premium:rc-monthly-5', // monthly
 ] as const;
 
@@ -248,12 +249,13 @@ class RevenueCatServiceClass {
       'yearly',
       'annual',
       'year',
+      'rc-qtr-10',
       'rc-10-qtr',
       'rc_10_qtr',
-      'quarter',
-      'qtr',
       'six_month',
       '$rc_six_month',
+      'quarter',
+      'qtr',
       'rc-monthly-5',
       'rc-5-monthly',
       'rc_5_monthly',
@@ -378,12 +380,6 @@ class RevenueCatServiceClass {
 
   private getFallbackExpiryDays(productId: string): number {
     const id = productId.toLowerCase();
-    if (id.includes('qtr') || id.includes('quarter') || id.includes('three_month')) {
-      return 90;
-    }
-    if (id.includes('six')) {
-      return 180;
-    }
     if (
       id.includes('annual') ||
       id.includes('year') ||
@@ -391,6 +387,13 @@ class RevenueCatServiceClass {
       id.includes('rc_10_year')
     ) {
       return 365;
+    }
+    // Android 6-month base plan uses rc-qtr-10 under $rc_six_month.
+    if (id.includes('rc-qtr-10') || id.includes('six_month') || id.includes('six')) {
+      return 180;
+    }
+    if (id.includes('qtr') || id.includes('quarter') || id.includes('three_month')) {
+      return 90;
     }
     return 30;
   }

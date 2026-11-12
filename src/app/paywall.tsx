@@ -84,39 +84,80 @@ const FEATURES = [
 
 const AVATARS = ['DR', 'MS', 'AK', '+'];
 
-function planTitle(plan: SubscriptionPlan) {
-  const id = (plan.identifier || '').toLowerCase();
+function planKind(plan: SubscriptionPlan | null | undefined): 'year' | 'six' | 'quarter' | 'month' | 'other' {
+  const id = (plan?.identifier || '').toLowerCase();
   if (
     id.includes('year') ||
     id.includes('annual') ||
     id.includes('early-15') ||
     id.includes('rc_10_year')
   ) {
-    return 'Yearly Access';
+    return 'year';
   }
-  if (id.includes('qtr') || id.includes('quarter') || id.includes('six')) {
-    return 'Quarterly Access';
+  // Android 6-month product (RC $rc_six_month) before generic "qtr" match.
+  if (id.includes('rc-qtr-10') || id.includes('six_month') || id.includes('six')) {
+    return 'six';
+  }
+  if (id.includes('qtr') || id.includes('quarter')) {
+    return 'quarter';
   }
   if (id.includes('month') || id.includes('monthly')) {
-    return 'Monthly Access';
+    return 'month';
   }
-  return 'Premium Plan';
+  return 'other';
+}
+
+function planTitle(plan: SubscriptionPlan) {
+  switch (planKind(plan)) {
+    case 'year':
+      return 'Yearly Access';
+    case 'six':
+      return '6-Month Access';
+    case 'quarter':
+      return 'Quarterly Access';
+    case 'month':
+      return 'Monthly Access';
+    default:
+      return 'Premium Plan';
+  }
 }
 
 function planPrice(plan: SubscriptionPlan) {
   return getPlanProduct(plan)?.priceString || '—';
 }
 
+function planBillingNote(plan: SubscriptionPlan) {
+  switch (planKind(plan)) {
+    case 'year':
+      return 'Billed yearly · best savings';
+    case 'six':
+      return 'Billed every 6 months · save vs monthly';
+    case 'quarter':
+      return 'Billed quarterly · saves vs monthly';
+    case 'month':
+      return 'Renews each month · cancel anytime';
+    default:
+      return 'Cancel anytime from your store';
+  }
+}
+
+function planPeriodLabel(plan: SubscriptionPlan) {
+  switch (planKind(plan)) {
+    case 'year':
+      return 'per year';
+    case 'six':
+      return 'per 6 months';
+    case 'quarter':
+      return 'per quarter';
+    case 'month':
+      return 'per month';
+    default:
+      return '';
+  }
+}
+
 function isBestValue(plan: SubscriptionPlan | null | undefined) {
-  const id = (plan?.identifier || '').toLowerCase();
-  return (
-    id.includes('year') ||
-    id.includes('annual') ||
-    id.includes('early-15') ||
-    id.includes('qtr') ||
-    id.includes('quarter') ||
-    id.includes('six')
-  );
+  return planKind(plan) === 'year';
 }
 
 function KickerLine() {
@@ -194,13 +235,11 @@ function PlanCard({
       </View>
       <View style={styles.planInfo}>
         <Text style={styles.planName}>{planTitle(plan)}</Text>
-        <Text style={styles.planNote}>
-          {bestValue ? 'Billed quarterly · saves vs monthly' : 'Renews each month · cancel anytime'}
-        </Text>
+        <Text style={styles.planNote}>{planBillingNote(plan)}</Text>
       </View>
       <View style={styles.planPriceWrap}>
         <Text style={styles.planPrice}>{planPrice(plan)}</Text>
-        <Text style={styles.planPer}>{bestValue ? 'per quarter' : 'per month'}</Text>
+        <Text style={styles.planPer}>{planPeriodLabel(plan)}</Text>
       </View>
     </Pressable>
   );
@@ -258,14 +297,16 @@ export default function PaywallScreen() {
     if (!selectedPlan) {
       return '';
     }
-    const id = (selectedPlan.identifier || '').toLowerCase();
-    if (id.includes('year') || id.includes('annual') || id.includes('early-15')) {
-      return 'Yearly plan — best value, save vs monthly';
+    switch (planKind(selectedPlan)) {
+      case 'year':
+        return 'Yearly plan — best value, save vs monthly';
+      case 'six':
+        return '6-month plan — save vs monthly';
+      case 'quarter':
+        return 'Quarterly plan — save vs monthly';
+      default:
+        return 'Monthly plan — cancel anytime from your store';
     }
-    if (id.includes('qtr') || id.includes('quarter') || id.includes('six')) {
-      return 'Quarterly plan — best value, save vs monthly';
-    }
-    return 'Monthly plan — cancel anytime from your store';
   }, [selectedPlan]);
 
   const onSubscribe = async () => {
