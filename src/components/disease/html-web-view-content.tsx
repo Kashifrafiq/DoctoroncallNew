@@ -9,6 +9,35 @@ type HtmlWebViewContentProps = {
   onImagePress?: (uri: string) => void;
 };
 
+/**
+ * Firebase Storage download URLs require the object path after `/o/` to use
+ * `%2F` separators. CMS/editor HTML often stores unencoded `/` paths, which
+ * returns HTTP 400 "Invalid HTTP method/URL pair." and breaks <img> loads.
+ */
+function fixFirebaseStorageUrl(url: string): string {
+  const decoded = url.replace(/&amp;/gi, '&').trim();
+  const match = decoded.match(
+    /^(https:\/\/firebasestorage\.googleapis\.com\/v0\/b\/[^/]+\/o\/)([^?]+)(\?.*)?$/i,
+  );
+  if (!match) {
+    return decoded;
+  }
+
+  const [, prefix, objectPath, query = ''] = match;
+  if (objectPath.includes('%2F') || !objectPath.includes('/')) {
+    return `${prefix}${objectPath}${query}`;
+  }
+
+  return `${prefix}${encodeURIComponent(decodeURIComponent(objectPath))}${query}`;
+}
+
+function normalizeHtmlMediaUrls(html: string): string {
+  return html.replace(
+    /(<img\b[^>]*?\bsrc=["'])([^"']+)(["'])/gi,
+    (_full, start: string, src: string, end: string) => `${start}${fixFirebaseStorageUrl(src)}${end}`,
+  );
+}
+
 const setupContentJS = `
   (function() {
     var content = document.getElementById('content');
@@ -46,28 +75,28 @@ export function HtmlWebViewContent({ html, onImagePress }: HtmlWebViewContentPro
   const [hasTable, setHasTable] = useState(false);
   const webViewRef = useRef<WebView>(null);
   const lastRemeasureWidth = useRef(0);
+  const normalizedHtml = html ? normalizeHtmlMediaUrls(html) : '';
 
   useEffect(() => {
     setContentSize({ width: 0, height: 0 });
     setHasTable(false);
     lastRemeasureWidth.current = 0;
-  }, [html, containerWidth]);
+  }, [normalizedHtml, containerWidth]);
 
   useEffect(() => {
-    if (!html) {
+    if (!normalizedHtml) {
       console.log('[DiseaseHTML] no html content');
       return;
     }
 
-    const imgSrcMatches = [...html.matchAll(/<img[^>]+src=["']([^"']+)["']/gi)].map(
+    const imgSrcMatches = [...normalizedHtml.matchAll(/<img[^>]+src=["']([^"']+)["']/gi)].map(
       (match) => match[1],
     );
 
-    console.log('[DiseaseHTML] raw html length:', html.length);
-    console.log('[DiseaseHTML] raw html:', html);
+    console.log('[DiseaseHTML] raw html length:', normalizedHtml.length);
     console.log('[DiseaseHTML] img src count:', imgSrcMatches.length);
     console.log('[DiseaseHTML] img srcs:', imgSrcMatches);
-  }, [html]);
+  }, [normalizedHtml]);
 
   const canScrollHorizontally =
     hasTable && containerWidth > 0 && contentSize.width > containerWidth + 2;
@@ -77,7 +106,7 @@ export function HtmlWebViewContent({ html, onImagePress }: HtmlWebViewContentPro
   const ready = contentSize.height > 0 && containerWidth > 0;
 
   useEffect(() => {
-    if (!ready || !html) {
+    if (!ready || !normalizedHtml) {
       return;
     }
 
@@ -91,9 +120,9 @@ export function HtmlWebViewContent({ html, onImagePress }: HtmlWebViewContentPro
     }, 120);
 
     return () => clearTimeout(timer);
-  }, [ready, webViewWidth, html]);
+  }, [ready, webViewWidth, normalizedHtml]);
 
-  if (!html) {
+  if (!normalizedHtml) {
     return null;
   }
 
@@ -160,7 +189,7 @@ export function HtmlWebViewContent({ html, onImagePress }: HtmlWebViewContentPro
         </style>
       </head>
       <body>
-        <div id="content">${html}</div>
+        <div id="content">${normalizedHtml}</div>
         <script>
           (function() {
             var imgs = Array.prototype.slice.call(document.querySelectorAll('img'));
@@ -291,7 +320,9 @@ export function HtmlWebViewContent({ html, onImagePress }: HtmlWebViewContentPro
         <WebView
           key={`html-${containerWidth}`}
           ref={webViewRef}
-          source={{ html: htmlContent }}
+          source={{ html: htmlContent, baseUrl: 'https://firebasestorage.googleapis.com' }}
+          originWhitelist={['*']}
+          mixedContentMode="always"
           onMessage={handleMessage}
           onLoadEnd={onLoadEnd}
           javaScriptEnabled
